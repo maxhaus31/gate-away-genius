@@ -90,7 +90,15 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "cv11";
-    background-image: var(--gradient-hero);
-    background-attachment: fixed;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Hairline boarding-pass divider */
+  .hairline {
+    background-image: linear-gradient(to right, transparent 0, transparent 6px, hsl(var(--border)) 6px, hsl(var(--border)) 14px);
+    background-size: 14px 1px;
+    background-repeat: repeat-x;
+    background-position: left center;
+    height: 1px;
   }
 }
