@@ -8,58 +8,50 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* GateAway — dark navy + warm amber travel palette */
-    --background: 220 45% 8%;
-    --foreground: 35 30% 95%;
+    /* GateAway — premium boarding pass.
+       Deep navy surface, warm off-white text, single amber accent. */
+    --background: 210 51% 11%;          /* #0D1B2A */
+    --foreground: 36 41% 93%;           /* #F5F0E8 */
 
-    --card: 220 40% 11%;
-    --card-foreground: 35 30% 95%;
+    --card: 210 45% 13%;                /* slightly lifted navy */
+    --card-foreground: 36 41% 93%;
 
-    --popover: 220 40% 11%;
-    --popover-foreground: 35 30% 95%;
+    --popover: 210 45% 13%;
+    --popover-foreground: 36 41% 93%;
 
-    --primary: 35 92% 58%;
-    --primary-foreground: 220 50% 10%;
+    /* Single accent — amber/gold #E8A930. Used sparingly. */
+    --primary: 40 80% 54%;
+    --primary-foreground: 210 51% 11%;
 
-    --primary-glow: 38 100% 68%;
+    --secondary: 210 40% 16%;
+    --secondary-foreground: 36 41% 93%;
 
-    --secondary: 220 35% 16%;
-    --secondary-foreground: 35 30% 95%;
+    --muted: 210 35% 15%;
+    --muted-foreground: 36 15% 68%;
 
-    --muted: 220 30% 14%;
-    --muted-foreground: 220 15% 65%;
+    --accent: 40 80% 54%;
+    --accent-foreground: 210 51% 11%;
 
-    --accent: 35 92% 58%;
-    --accent-foreground: 220 50% 10%;
+    --destructive: 4 72% 56%;
+    --destructive-foreground: 36 41% 93%;
 
-    --destructive: 0 75% 58%;
-    --destructive-foreground: 35 30% 95%;
+    /* Verdict tokens — only these three colors besides accent. */
+    --success: 152 48% 42%;             /* deep green */
+    --success-foreground: 36 41% 93%;
 
-    --success: 152 65% 48%;
-    --success-foreground: 220 50% 10%;
+    --warning: 40 80% 54%;              /* amber, same as primary */
+    --warning-foreground: 210 51% 11%;
 
-    --warning: 38 95% 60%;
-    --warning-foreground: 220 50% 10%;
+    --danger: 4 72% 56%;                /* red */
+    --danger-foreground: 36 41% 93%;
 
-    --danger: 0 78% 62%;
-    --danger-foreground: 35 30% 95%;
+    /* Subtle borders: warm off-white tinted, low contrast against navy.
+       Apply with hsl(var(--border)) — no extra alpha needed. */
+    --border: 210 30% 22%;
+    --input: 210 35% 18%;
+    --ring: 40 80% 54%;
 
-    --border: 220 30% 18%;
-    --input: 220 30% 16%;
-    --ring: 35 92% 58%;
-
-    --radius: 1rem;
-
-    --gradient-hero: radial-gradient(ellipse at top, hsl(220 50% 16%) 0%, hsl(220 45% 8%) 60%);
-    --gradient-accent: linear-gradient(135deg, hsl(35 92% 58%), hsl(20 90% 55%));
-    --gradient-card: linear-gradient(160deg, hsl(220 40% 13%) 0%, hsl(220 45% 10%) 100%);
-    --gradient-timeline: linear-gradient(90deg, hsl(220 35% 18%) 0%, hsl(35 92% 58%) 50%, hsl(220 35% 18%) 100%);
-
-    --shadow-glow: 0 20px 60px -20px hsl(35 92% 58% / 0.35);
-    --shadow-card: 0 30px 60px -30px hsl(220 80% 4% / 0.8);
-    --shadow-soft: 0 8px 24px -8px hsl(220 80% 4% / 0.5);
-
-    --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --radius: 0.875rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -98,7 +90,15 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "cv11";
-    background-image: var(--gradient-hero);
-    background-attachment: fixed;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Hairline boarding-pass divider */
+  .hairline {
+    background-image: linear-gradient(to right, transparent 0, transparent 6px, hsl(var(--border)) 6px, hsl(var(--border)) 14px);
+    background-size: 14px 1px;
+    background-repeat: repeat-x;
+    background-position: left center;
+    height: 1px;
   }
 }
