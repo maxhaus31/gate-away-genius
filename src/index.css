@@ -45,9 +45,10 @@ All colors MUST be HSL.
     --danger: 4 72% 56%;                /* red */
     --danger-foreground: 36 41% 93%;
 
-    /* Subtle low-opacity white borders on dark — boarding pass divisions. */
-    --border: 36 41% 93% / 0.08;
-    --input: 36 41% 93% / 0.1;
+    /* Subtle borders: warm off-white tinted, low contrast against navy.
+       Apply with hsl(var(--border)) — no extra alpha needed. */
+    --border: 210 30% 22%;
+    --input: 210 35% 18%;
     --ring: 40 80% 54%;
 
     --radius: 0.875rem;
