@@ -196,16 +196,16 @@ export function buildPlan(
 
   if (usable < roundTripTransport + 30) {
     verdict = "stay";
-    headline = "Stay airside. Don't risk it.";
-    message = `By the time you cleared immigration and rode into ${airport.city}, you'd be turning right back around. Grab a proper meal in the terminal — ${airport.name} is genuinely nice — and save the city for next time.`;
+    headline = "Stay airside on this one.";
+    message = `By the time you cleared immigration and rode into ${airport.city}, you'd be turning right back around. Grab a proper meal in the terminal — ${airport.name} is genuinely nice — and save the city for the next layover.`;
   } else if (cityTime < 75) {
     verdict = "tight";
-    headline = "Tight, but doable — if you move.";
-    message = `You've got about ${formatDuration(cityTime)} in ${airport.city} itself. Pick one thing, do it well, and don't linger. Set an alarm for your turnaround.`;
+    headline = `Doable — pick one thing in ${airport.city} and move.`;
+    message = `You've got about ${formatDuration(cityTime)} on the ground. Enough for one good thing, not three. Set an alarm for the turnaround and keep it tight.`;
   } else {
     verdict = "safe";
-    headline = "You're golden. Go explore.";
-    message = `That's a solid ${formatDuration(cityTime)} in ${airport.city} — plenty of time to ${airport.vibe.split(",")[0].trim()} and still be back at your gate, relaxed.`;
+    headline = `You've got a solid ${formatDuration(cityTime)} in ${airport.city}.`;
+    message = `Plenty of room to ${airport.vibe.split(",")[0].trim()} and still be back at your gate without a sprint. Go.`;
   }
 
   const suggestions = SUGGESTIONS[airportCode]
