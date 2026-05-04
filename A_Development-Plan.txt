@@ -1,0 +1,31 @@
+Steps
+Phase 1: Backend Skeleton & API Contract (Days 1–2)
+
+Choose FastAPI (lighter than Django, built for APIs, great async support)
+Define API contract: POST /api/plan (main endpoint), GET /api/airports, GET /api/airports/{code}
+Create Python project structure: services/ (AviationStack, Google Maps, Claude, airport data), routes/, models
+Stub out FastAPI with mock responses before connecting real APIs
+
+
+Phase 2: External API Integration (Days 2–3)
+5. Integrate AviationStack to fetch real flight data (departure/arrival times, terminal, delays)
+6. Integrate Google Maps Distance Matrix for airport ↔ city travel times
+7. Migrate hardcoded airport data from gateaway-data.ts → Python (airport_data.py): re-entry rules, activities
+
+
+Phase 3: Claude AI Integration (Days 3–4)
+8. Create services/claude_ai.py to replace hardcoded verdict logic
+9. Design system prompt with airport-specific rules + safety disclaimers
+10. Make Claude calls async (parallel with AviationStack + Google Maps for speed)
+
+
+Phase 4: Frontend API Integration (Days 4–5)
+11. Create TypeScript API client (src/api/client.ts) with getPlan() function
+12. Update PlannerForm.tsx to call backend on submit
+13. Update Index.tsx to use backend data instead of local buildPlan() logic
+
+
+Phase 5: Testing & Deployment (Days 5–7)
+14. Unit tests (mock external APIs), integration tests (full /api/plan flow)
+15. Frontend tests (mock fetch, e2e flow)
+16. Deploy backend (Render/Railway/Heroku), update frontend API base URL, configure CORS
