@@ -1,15 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import config
 from models import PlannerInput, PlannerOutput
+from services.planner_service import generate_plan
+from services.flight_data import get_flight_times
 
 app = FastAPI(title="GateAway Genius Backend", version="0.1.0")
 
 # CORS: Allow frontend to call this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[config.FRONTEND_URL, "http://localhost:5173"],
+    allow_origins=[config.FRONTEND_URL, "http://localhost:5173", "http://localhost:8080", "http://localhost:8081"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,40 +29,17 @@ async def create_plan(input_data: PlannerInput) -> PlannerOutput:
     """
     Main endpoint: receives flight info, returns layover verdict + suggestions
     
-    This is a placeholder. Will be replaced with real logic in Phase 2/3.
+    Uses planner_service to calculate verdict based on flight times and airport rules.
     """
-    # For now, return mock data
-    return PlannerOutput(
-        verdict="safe",
-        verdict_description="You have enough time to leave the airport safely.",
-        timeline=[
-            {"label": "Security", "duration_minutes": 15, "color": "red"},
-            {"label": "Travel to city", "duration_minutes": 30, "color": "blue"},
-            {"label": "Activity time", "duration_minutes": 90, "color": "green"},
-            {"label": "Travel back", "duration_minutes": 30, "color": "blue"},
-            {"label": "Buffer", "duration_minutes": 15, "color": "orange"},
-        ],
-        available_time_minutes=180,
-        suggestions=[
-            {
-                "emoji": "🍷",
-                "name": "Wine Tasting",
-                "description": "Local Portuguese wine bar",
-                "duration_minutes": 60,
-            },
-            {
-                "emoji": "🎨",
-                "name": "Pastéis de Nata Tour",
-                "description": "Famous Lisbon pastry experience",
-                "duration_minutes": 45,
-            },
-        ],
-        safety_buffer_breakdown={
-            "security_check": 15,
-            "passport_control": 5,
-            "buffer": 10,
-        },
-    )
+    try:
+        result = generate_plan(input_data)
+        if result is None:
+            raise HTTPException(status_code=400, detail="Invalid input data")
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 
 @app.get("/api/airports")
@@ -85,6 +64,32 @@ async def get_airport_details(airport_code: str):
         "terminals": ["T1", "T2"],
         "security_buffer_minutes": 15,
     }
+
+
+@app.get("/api/flights/lookup")
+async def lookup_flight(flight_number: str, airport_code: str):
+    """
+    Look up a flight by number and arrival airport
+    
+    Query params:
+    - flight_number: IATA code (e.g., "LH780")
+    - airport_code: IATA code (e.g., "SIN")
+    
+    Returns arrival time and date, or error if not found
+    """
+    if not flight_number or not airport_code:
+        raise HTTPException(status_code=400, detail="flight_number and airport_code required")
+    
+    try:
+        result = await get_flight_times(flight_number, airport_code)
+        if result is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Flight {flight_number} arriving at {airport_code} not found. Check the flight number and airport code."
+            )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error looking up flight: {str(e)}")
 
 
 if __name__ == "__main__":

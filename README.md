@@ -1,46 +1,38 @@
-# GateAway Genius
-
-**Your AI-powered layover planner.** Get instant, personalized recommendations on whether you have time to safely leave the airport during your connection.
+# GateAway ✈️
+**Your AI-powered layover planner.** Tells you if you have enough time to safely leave the airport — and what to do with it.
 
 ---
 
 ## 📋 Table of Contents
-
 - [Quick Start](#quick-start)
 - [Architecture](#architecture)
-- [Setup Instructions](#setup-instructions)
-- [Running the App](#running-the-app)
-- [Project Status](#project-status)
-- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [Build Steps](#build-steps)
+- [API Contract](#api-contract)
+- [Demo Scenarios](#demo-scenarios)
+- [Deployment](#deployment)
 
 ---
 
 ## 🚀 Quick Start
 
-**Prerequisites:** Node.js, Python 3.10+, Bun (or npm)
-
-### Setup & Run (Two Terminals)
+**Prerequisites:** Node.js, Python 3.10+
 
 **Terminal 1 — Backend:**
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
+# Runs at http://localhost:8000
 ```
 
-Backend runs at: `http://localhost:8000`
-
-**Terminal 2 — Frontend (from root):**
+**Terminal 2 — Frontend:**
 ```bash
 npm install
 npm run dev
-```
-
-**Then open in browser:**
-```
-http://localhost:8080
+# Runs at http://localhost:5173
 ```
 
 ---
@@ -48,246 +40,22 @@ http://localhost:8080
 ## 🏗 Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                  Frontend (React + TypeScript)              │
-│              http://localhost:8080                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  User Input: Flight Info + Passport + Desired Activity     │
-│  ↓                                                           │
-│  [Calls POST /api/plan]                                     │
-│                                                              │
-├─────────────────────────────────────────────────────────────┤
-│                Backend (Python FastAPI)                     │
-│              http://localhost:8000                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. Fetch flight data (AviationStack API)                   │
-│  2. Calculate transit times (Google Maps API)               │
-│  3. Apply airport rules + safety logic                      │
-│  4. Call Gemini AI for personalized verdict                 │
-│  ↓                                                           │
-│  Response: Safe/Tight/Stay + Timeline + Suggestions        │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+Frontend (React + TypeScript) — Lovable / Vite
+        ↕ POST /api/plan
+Backend (Python FastAPI)
+        ├── schiphol_api.py   → Schiphol API (flight data + security queues)
+        ├── airport_data.py   → Hardcoded AMS knowledge base (moat)
+        ├── google_maps.py    → Google Maps Distance Matrix (transit times)
+        ├── cache_service.py  → Saved itineraries (reduces token usage)
+        └── huggingface_llm.py / gemini_ai.py → LLM itinerary generation
 ```
 
----
-
-## 🛠 Setup Instructions
-
-### Prerequisites
-- **Node.js** (for frontend)
-- **Python 3.10+** (for backend)
-- **Git** (to clone repo)
-
-### Step 1: Clone Repository
-
-```bash
-git clone https://github.com/maxhaus31/gate-away-genius.git
-cd gate-away-genius
+**Verdict logic (never delegated to LLM):**
 ```
-
-### Step 2: Frontend Setup
-
-```bash
-npm install  # or: bun install
-```
-
-### Step 3: Backend Setup
-
-```bash
-cd backend
-
-# Create Python virtual environment (git-ignored, not in repo)
-python3 -m venv .venv
-
-# Activate it
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Return to project root
-cd ..
-```
-
-**Note:** The `.venv/` folder is git-ignored, so each collaborator creates their own locally.
-
-### Step 4: Configure API Keys
-
-```bash
-# Copy example file
-cp backend/.env.example backend/.env
-
-# Edit backend/.env with your API keys:
-```
-
-Edit `backend/.env`:
-```
-GOOGLE_GEMINI_API_KEY=sk-proj-...
-AVIATIONSTACK_API_KEY=...
-GOOGLE_MAPS_API_KEY=...
-DEBUG=True
-FRONTEND_URL=http://localhost:8080
-```
-
-Get keys from:
-- **Gemini:** [Google AI Studio](https://aistudio.google.com/app/apikey)
-- **AviationStack:** [aviationstack.com](https://aviationstack.com)
-- **Google Maps:** [Google Cloud Console](https://console.cloud.google.com/)
-
----
-
-## ▶️ Running the App
-
-### Option 1: Two Terminal Windows (Recommended)
-
-**Terminal 1:**
-```bash
-cd backend
-source .venv/bin/activate
-python main.py
-```
-
-**Terminal 2:**
-```bash
-npm run dev
-```
-
-**Open:** `http://localhost:8080`
-
-### Option 2: Manual One-by-One
-
-```bash
-# Install dependencies
-npm install
-cd backend && source .venv/bin/activate && pip install -r requirements.txt && cd ..
-
-# Backend
-cd backend && source .venv/bin/activate && python main.py
-
-# Frontend (in new terminal)
-npm run dev
-```
-
----
-
-## 📊 Project Status
-
-### ✅ Phase 1: Backend Skeleton (Completed)
-
-- [x] FastAPI app setup (`main.py`, `config.py`, `models.py`)
-- [x] CORS configuration for frontend communication
-- [x] Mock `/api/plan` endpoint
-- [x] `/api/airports` endpoint
-- [x] Environment variables & API key management
-- [x] Health check endpoint (`/health`)
-
-### 🚧 Phase 2: External API Integration (Next)
-
-- [ ] AviationStack service — fetch real flight data
-- [ ] Google Maps Distance Matrix — calculate transit times
-- [ ] Airport data service — re-entry rules, activities per airport
-- [ ] Mock data for testing (since free tier has limitations)
-
-### ⏳ Phase 3: Gemini AI Integration
-
-- [ ] Create `services/gemini_ai.py`
-- [ ] Design system prompt with airport rules
-- [ ] Implement verdict logic: "Safe" / "Tight" / "Stay"
-- [ ] Implement suggestion ranking
-
-### 📱 Phase 4: Frontend Integration
-
-- [ ] Create `src/api/client.ts` — API client
-- [ ] Update `PlannerForm.tsx` to call backend
-- [ ] Update `Index.tsx` to handle API responses
-- [ ] Loading & error states
-- [ ] Graceful fallback if backend unavailable
-
-### 🧪 Phase 5: Testing & Deployment
-
-- [ ] Unit tests (backend services)
-- [ ] Integration tests (full API flow)
-- [ ] Frontend tests (form submission)
-- [ ] Deploy backend to Render.com
-- [ ] Deploy frontend to Vercel
-- [ ] Set up CI/CD with GitHub Actions
-
----
-
-## 🔌 API Endpoints
-
-### Health Check
-```
-GET /health
-```
-Returns: `{"status":"ok"}`
-
-### List Airports
-```
-GET /api/airports
-```
-
-### Get Airport Details
-```
-GET /api/airports/{airport_code}
-```
-Example: `GET /api/airports/LIS`
-
-### Create Layover Plan (Main)
-```
-POST /api/plan
-Content-Type: application/json
-
-{
-  "arrival_time": "2024-05-01T10:00:00",
-  "departure_time": "2024-05-01T14:00:00",
-  "airport_code": "LIS",
-  "passport_region": "EU"
-}
-```
-
-**Response:**
-```json
-{
-  "verdict": "safe",
-  "verdict_description": "You have enough time...",
-  "available_time_minutes": 180,
-  "timeline": [
-    {"label": "Security", "duration_minutes": 15, "color": "red"}
-  ],
-  "suggestions": [
-    {"emoji": "🍷", "name": "Wine Tasting", "duration_minutes": 60}
-  ]
-}
-```
-
-### Interactive API Docs
-```
-http://localhost:8000/docs
-```
-Visit this URL to test endpoints in Swagger UI (auto-generated by FastAPI).
-
----
-
-## 🧪 Testing
-
-### Test AviationStack Connection
-```bash
-cd backend
-source .venv/bin/activate
-python test_aviationstack.py
-```
-
-### Test Backend Locally
-```bash
-# Backend is running on http://localhost:8000
-# Try these URLs:
-http://localhost:8000/health
-http://localhost:8000/api/airports
-http://localhost:8000/docs
+usable_minutes = layover - exit_time - (transit × 2) - re_entry_buffer - security_queue
+< 0 min  → NO
+< 45 min → MARGINAL
+≥ 45 min → YES
 ```
 
 ---
@@ -296,97 +64,203 @@ http://localhost:8000/docs
 
 ```
 gate-away-genius/
-├── src/                           # Frontend (React + TypeScript)
+├── src/                                  # Frontend (React + TypeScript)
 │   ├── components/
 │   │   ├── gateaway/
 │   │   │   ├── Header.tsx
-│   │   │   ├── PlannerForm.tsx    # User input form
-│   │   │   ├── Verdict.tsx        # Safe/Tight/Stay verdict
-│   │   │   ├── Timeline.tsx       # Visual timeline
-│   │   │   └── Suggestions.tsx    # Activity recommendations
-│   │   └── ui/                    # shadcn UI components
+│   │   │   ├── PlannerForm.tsx           # User input form
+│   │   │   ├── PersonaSelector.tsx       # "Choose your character"
+│   │   │   ├── Verdict.tsx               # YES / MARGINAL / NO banner
+│   │   │   ├── Timeline.tsx              # Colour-coded timeline bar
+│   │   │   └── Suggestions.tsx           # Activity cards + map
+│   │   └── ui/                           # shadcn UI components
+│   ├── api/
+│   │   └── client.ts                     # Calls /api/plan
 │   ├── lib/
-│   │   ├── gateaway-data.ts      # Static data (moving to backend)
 │   │   └── utils.ts
 │   └── pages/
-│       ├── Index.tsx              # Main page
+│       ├── Index.tsx
 │       └── NotFound.tsx
 │
-├── backend/                       # Backend (Python FastAPI)
-│   ├── main.py                   # FastAPI app entry
-│   ├── config.py                 # Environment config
-│   ├── models.py                 # Pydantic schemas
-│   ├── requirements.txt          # Python deps
-│   ├── .env                      # API keys (git-ignored)
-│   ├── .env.example              # Template
+├── backend/
+│   ├── main.py                           # FastAPI entry point
+│   ├── config.py                         # Environment config
+│   ├── models.py                         # Pydantic schemas
+│   ├── requirements.txt
+│   ├── .env                              # API keys (git-ignored)
+│   ├── .env.example                      # Template
 │   │
-│   ├── services/                 # Business logic
-│   │   ├── flight_data.py        # Flight info (Phase 2)
-│   │   ├── google_maps.py        # Transit times (Phase 2)
-│   │   ├── airport_data.py       # Airport rules (Phase 2)
-│   │   ├── gemini_ai.py          # AI reasoning (Phase 3)
-│   │   └── planner.py            # Core logic (Phase 3)
+│   ├── cache/
+│   │   └── itineraries.json              # Saved itineraries (git-ignored)
 │   │
-│   └── routes/                   # API routes
-│       └── planner.py            # /api/plan endpoint
+│   ├── services/
+│   │   ├── schiphol_api.py               # Flight info + security queues
+│   │   ├── airport_data.py               # Hardcoded AMS knowledge base
+│   │   ├── google_maps.py                # Transit times to city
+│   │   ├── cache_service.py              # Cache lookup + save
+│   │   ├── gemini_ai.py                  # LLM via Gemini (current)
+│   │   ├── huggingface_llm.py            # LLM via HuggingFace (if needed)
+│   │   └── planner.py                    # Core calculation logic
+│   │
+│   └── routes/
+│       └── planner.py                    # /api/plan endpoint
 │
-├── package.json                  # Frontend deps
-├── vite.config.ts                # Vite config
-├── tsconfig.json                 # TypeScript config
-├── tailwind.config.ts            # Tailwind CSS
-└── README.md                      # This file
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+└── README.md
 ```
 
 ---
 
-## 🚀 Deployment
+## 🔌 API Contract
 
-### Backend → Render.com
+**Endpoint:** `POST /api/plan`
 
-1. Push code to GitHub
-2. Create account at [render.com](https://render.com)
-3. Connect GitHub repo
-4. Set environment variables in Render dashboard
-5. Deploy!
+**Request:**
+```json
+{
+  "arrival_flight": "KL1234",
+  "departure_flight": "KL5678",
+  "passport_country": "Portugal",
+  "departure_type": "schengen",
+  "persona": "Culture Seeker"
+}
+```
 
-Backend URL: `https://gate-away-genius-backend.onrender.com`
+**Response:**
+```json
+{
+  "verdict": "YES",
+  "usable_minutes": 94,
+  "reason": "After transit and re-entry buffer, you have 94 minutes in the city.",
+  "timeline": [...],
+  "activities": [...],
+  "cached": false,
+  "disclaimer": "AI-generated guidance only. GateAway is not responsible for missed flights."
+}
+```
 
-### Frontend → Vercel
-
-1. Create account at [vercel.com](https://vercel.com)
-2. Import GitHub repo
-3. Set `VITE_API_URL=https://gate-away-genius-backend.onrender.com`
-4. Deploy!
-
-Frontend URL: `https://gate-away-genius.vercel.app`
+Other endpoints:
+```
+GET /health               → {"status": "ok"}
+GET /api/airports         → list of supported airports
+GET /api/airports/{code}  → airport details
+GET /docs                 → Swagger UI (auto-generated)
+```
 
 ---
 
-## 📚 Resources
+## 🛠 Build Steps
 
-- [FastAPI Docs](https://fastapi.tiangolo.com)
-- [Google Gemini API](https://ai.google.dev/)
-- [React Docs](https://react.dev)
-- [Vite Guide](https://vitejs.dev)
-- [shadcn/ui](https://ui.shadcn.com)
-- [Tailwind CSS](https://tailwindcss.com)
+### Step 1 — Agree on API contract
+Whole team aligns on request/response structure above before writing any code. Frontend builds against mock data matching this contract; backend builds the real logic independently.
+
+### Step 2 — `schiphol_api.py`
+- Register at [developer.schiphol.nl](https://developer.schiphol.nl) → get `app_id` + `app_key`
+- Fetch: arrival/departure times, terminal, pier, delay, real-time security queue wait times
+- Always include mock fallback for when API is unavailable
+
+### Step 3 — `airport_data.py`
+Hardcoded AMS knowledge base — information no external API provides:
+- Exit time per pier (B, C, D, E, F, G, H, M)
+- Re-entry buffers: Schengen (45min), non-Schengen (75min), domestic (30min)
+- Peak hours: 07:00–09:30 and 16:30–19:00
+- Visa-free transit rules for top 20 passport nationalities
+
+### Step 4 — `google_maps.py`
+- Register at Google Cloud Console → get `GOOGLE_MAPS_API_KEY`
+- Distance Matrix API: Schiphol → activity location, by mode (transit/taxi/walking), at actual time of day
+
+### Step 5 — LLM service (Gemini first, HuggingFace if needed)
+**Current approach:** `gemini_ai.py` using Google Gemini API
+- Sends: verdict, usable minutes, persona, airport context
+- Returns: activity itinerary + plain-language explanation in JSON
+- LLM never calculates the safety verdict — only generates the itinerary
+
+**⚠️ Wrapper risk mitigation:**
+Before submission, test the product against the AI Judge LLM with prompts such as:
+- *"Is this just a wrapper around Gemini?"*
+- *"What is the moat of this product?"*
+
+If the judge flags the Gemini usage as a wrapper, migrate to `huggingface_llm.py`:
+- Model: `meta-llama/Llama-3.2-3B-Instruct` (open source, self-hostable)
+- Fine-tune with LoRA on Google Colab using 150–200 synthetic AMS layover examples
+- Push fine-tuned model to HuggingFace Hub → update service to point to it
+- This gives a fully owned, self-hosted model — not a wrapper
+
+### Step 6 — `cache_service.py`
+- Cache key: `arrival_flight + departure_flight + passport_country + departure_type + persona`
+- If cache hit and delay difference < 15 minutes → return saved itinerary, skip LLM
+- If cache miss → call LLM → save result with timestamp
+- Entries expire after 24 hours
+- Reduces token costs significantly for repeated or similar requests
+
+### Step 7 — `planner.py`
+Assembles all services:
+1. `schiphol_api.py` → flight data + security queue
+2. `airport_data.py` → exit time, buffer, visa status
+3. `google_maps.py` → transit time to city
+4. Calculate usable minutes → determine verdict
+5. Build colour-coded timeline
+6. Check cache → if hit, return immediately
+7. If miss → call LLM → save to cache → return response
+
+### Step 8 — Wire `/api/plan`
+Connect `routes/planner.py` to `planner.py`. Validate inputs with Pydantic. Return full response.
+
+### Step 9 — Frontend (Lovable)
+- Connect GitHub repo to Lovable
+- Build input form: flight numbers, passport country, departure type, persona selector
+- Build results view: verdict banner, colour-coded timeline, map with activity points A/B/C, activity cards (name, photo, description, duration, transport), editable itinerary, disclaimer footer
+- Create `src/api/client.ts` to call `/api/plan`
+- Handle loading + error states
+
+### Step 10 — Deploy
+**Backend → [Render.com](https://render.com):**
+- Connect GitHub repo
+- Set env vars: `SCHIPHOL_APP_ID`, `SCHIPHOL_APP_KEY`, `HF_TOKEN` (if HuggingFace), `GOOGLE_MAPS_API_KEY`, `GOOGLE_GEMINI_API_KEY` (if Gemini)
+
+**Frontend → [Vercel](https://vercel.com):**
+- Import GitHub repo
+- Set `VITE_API_URL` to Render backend URL
+
+---
+
+## 🔑 Environment Variables
+
+```bash
+# backend/.env
+SCHIPHOL_APP_ID=...
+SCHIPHOL_APP_KEY=...
+GOOGLE_MAPS_API_KEY=...
+GOOGLE_GEMINI_API_KEY=...     # current LLM
+HF_TOKEN=...                  # if migrating to HuggingFace
+DEBUG=True
+FRONTEND_URL=http://localhost:5173
+```
+
+---
+
+## 🎬 Demo Scenarios (AMS)
+
+| Scenario | Input | Expected verdict |
+|---|---|---|
+| Comfortable | 4hr layover, Portuguese passport, Schengen, off-peak | ✅ YES — ~94min, Rijksmuseum + café |
+| Tight | 2.5hr layover, Indian passport, non-Schengen, rush hour | ⚠️ MARGINAL — coffee near station |
+| Impossible | 1.5hr layover, visa-required passport, non-Schengen | ❌ NO — clear explanation |
+
+The **NO verdict** is the most important demo moment — it proves the system is honest and not just optimistic.
 
 ---
 
 ## 🤝 Contributing
-
 1. Create feature branch: `git checkout -b feature/your-feature`
-2. Make changes
-3. Commit: `git commit -m "Add description"`
-4. Push: `git push origin feature/your-feature`
-5. Open Pull Request
-
----
+2. Commit: `git commit -m "Description"`
+3. Push: `git push origin feature/your-feature`
+4. Open Pull Request into `dev`
 
 ## 📝 License
-
-MIT License
-
----
-
+MIT 
 **Happy layover planning! ✈️**
