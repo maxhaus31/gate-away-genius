@@ -7,9 +7,13 @@ Migrated from src/lib/gateaway-data.ts
 import asyncio
 from typing import Optional, List
 from datetime import datetime
-from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, AirportInfo, BufferBreakdown
+from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, AirportInfo, BufferBreakdown, ActivityStep, ActivityItinerary
 from services.gemini_ai import GeminiActivityService
 from services.google_maps import GoogleMapsService
+
+# Security limit: Max Google Maps API calls per plan generation
+# Each activity can use 1 call, set this to prevent budget overruns
+MAX_GOOGLE_MAPS_CALLS = 10
 
 
 # Airport configuration (migrated from frontend)
@@ -247,14 +251,25 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         print(f"✈️ Got {len(gemini_activities)} activity suggestions from Gemini")
         
         # Validate activities with Google Maps - get real transit times
+        # Track API calls to stay within budget limit
+        maps_call_count = 0
+        
         for activity in gemini_activities:
             coords = f"{activity['latitude']},{activity['longitude']}"
-            round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
-                input_data.airport_code,
-                coords
-            )
+            round_trip_minutes = None
             
-            # If Google Maps call failed, use Gemini's time estimate
+            # Only call Google Maps if we haven't hit the limit
+            if maps_call_count < MAX_GOOGLE_MAPS_CALLS:
+                round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
+                    input_data.airport_code,
+                    coords,
+                    mode=input_data.transport_mode
+                )
+                maps_call_count += 1
+            else:
+                print(f"⚠️ Google Maps API limit ({MAX_GOOGLE_MAPS_CALLS}) reached, using Gemini estimates for remaining activities")
+            
+            # If Google Maps call failed or skipped, use Gemini's time estimate
             if round_trip_minutes is None:
                 print(f"⚠️ Could not verify travel time for {activity['title']}, using Gemini estimate")
                 round_trip_minutes = activity.get("minTimeNeeded", 60)
@@ -385,11 +400,82 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         for b in buffer_breakdown
     ]
     
+    # Build detailed activity itinerary for visualization
+    itinerary_steps = []
+    
+    # Step 1: Start at airport (disembark + immigration)
+    itinerary_steps.append(
+        ActivityStep(
+            type="airport",
+            emoji="✈️",
+            title=f"{airport_config['name']} (Arrive)",
+            duration_minutes=25 + immigration_buffer,
+        )
+    )
+    
+    if verdict != "stay" and suggestions_list:
+        # Step 2: Travel to first activity
+        first_activity_travel = airport_config["transport_to_city_min"]
+        itinerary_steps.append(
+            ActivityStep(
+                type="travel",
+                emoji="🚌",
+                title=airport_config["transport_label"],
+                duration_minutes=first_activity_travel,
+            )
+        )
+        
+        # Step 3+: Each activity with travel time between them
+        for i, activity in enumerate(suggestions_list[:3]):
+            itinerary_steps.append(
+                ActivityStep(
+                    type="activity",
+                    emoji=activity.emoji,
+                    title=activity.title,
+                    duration_minutes=activity.minTimeNeeded,
+                    coordinates=None,  # Could add coordinates if we have them
+                )
+            )
+            
+            # Add travel time to next activity or back to airport (except for last one)
+            if i < len(suggestions_list) - 1:
+                itinerary_steps.append(
+                    ActivityStep(
+                        type="travel",
+                        emoji="🚶",
+                        title="Travel between activities",
+                        duration_minutes=15,  # Estimated inter-city travel
+                    )
+                )
+        
+        # Step N: Travel back to airport
+        itinerary_steps.append(
+            ActivityStep(
+                type="travel",
+                emoji="🚌",
+                title=f"Return to {airport_config['name']}",
+                duration_minutes=airport_config["transport_to_city_min"],
+            )
+        )
+    
+    # Step N+1: Final airport buffer (security + boarding)
+    itinerary_steps.append(
+        ActivityStep(
+            type="airport",
+            emoji="🛂",
+            title="Security + Gate",
+            duration_minutes=airport_config["reentry_security_min"] + airport_config["walk_to_gate_min"] + airport_config["checkin_cutoff_min"],
+        )
+    )
+    
+    activity_itinerary = ActivityItinerary(steps=itinerary_steps)
+    
     return PlannerOutput(
         verdict=verdict,
         verdict_description=message,
         headline=headline,
         timeline=timeline_segments,
+        activity_itinerary=activity_itinerary,
         total_minutes=total_minutes,
         buffer_minutes=buffer_total,
         usable_minutes=usable_minutes,

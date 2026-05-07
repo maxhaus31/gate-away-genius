@@ -8,6 +8,7 @@ class PlannerInput(BaseModel):
     airport_code: str  # "LIS", "AMS", "SIN"
     passport_region: str  # "EU", "US", "OTHER"
     flight_number: Optional[str] = None  # e.g., "BA 284" for real flight lookup
+    transport_mode: str = "transit"  # "transit" for public transport, "driving" for car/taxi
 
 
 # Response models
@@ -15,6 +16,20 @@ class TimelineSegment(BaseModel):
     label: str
     duration_minutes: int
     color: str
+
+
+class ActivityStep(BaseModel):
+    """Single activity in the itinerary"""
+    type: str  # "airport", "travel", "activity"
+    emoji: str  # Icon representation
+    title: str  # "Lisbon Airport", "Travel to Pastel de Nata", etc.
+    duration_minutes: int
+    coordinates: Optional[str] = None  # For activities: "lat,lng"
+
+
+class ActivityItinerary(BaseModel):
+    """Detailed step-by-step itinerary for the layover"""
+    steps: List[ActivityStep]  # Ordered journey from airport -> activities -> airport
 
 
 class Suggestion(BaseModel):
@@ -55,6 +70,7 @@ class PlannerOutput(BaseModel):
     
     # Timeline data
     timeline: List[TimelineSegment]
+    activity_itinerary: ActivityItinerary  # Detailed step-by-step breakdown for visualization
     
     # Time breakdown
     total_minutes: int  # Total layover time

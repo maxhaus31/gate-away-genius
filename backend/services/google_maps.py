@@ -9,9 +9,9 @@ import asyncio
 
 
 class GoogleMapsService:
-    """Service to fetch transit times using Distance Matrix API"""
+    """Service to fetch transit times using Routes API"""
     
-    BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json"
+    BASE_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
     TIMEOUT = 10.0
     
     # Airport coordinates for major hubs
@@ -29,13 +29,13 @@ class GoogleMapsService:
         mode: str = "transit"
     ) -> Optional[Dict]:
         """
-        Get distance and duration between two points
+        Get distance and duration between two points using Routes API
         
         Args:
             from_coords: "52.3086,4.7639" (airport)
             to_coords: "52.3600,4.8852" (destination)
             departure_time: Unix timestamp for real-time traffic
-            mode: "transit", "taxi", or "walking"
+            mode: "transit" for public transport, "driving" for car/taxi
         
         Returns:
             {"distance_m": 5000, "duration_min": 25} or None if API fails
@@ -45,21 +45,34 @@ class GoogleMapsService:
             return None
         
         try:
-            params = {
-                "origins": from_coords,
-                "destinations": to_coords,
-                "key": GOOGLE_MAPS_API_KEY,
-                "mode": mode,
-                "units": "metric",
+            # Parse coordinates
+            from_lat, from_lng = map(float, from_coords.split(","))
+            to_lat, to_lng = map(float, to_coords.split(","))
+            
+            # Map mode to Routes API travelMode
+            travel_mode = "TRANSIT" if mode == "transit" else "DRIVE"
+            
+            # Routes API request body
+            body = {
+                "origin": {"location": {"latLng": {"latitude": from_lat, "longitude": from_lng}}},
+                "destination": {"location": {"latLng": {"latitude": to_lat, "longitude": to_lng}}},
+                "travelMode": travel_mode,
+                "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
             }
             
             if departure_time:
-                params["departure_time"] = departure_time
+                body["departureTime"] = f"2024-01-01T{departure_time:02d}:00:00Z"
+            
+            headers = {
+                "Content-Type": "application/json",
+                "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+            }
             
             async with httpx.AsyncClient() as client:
-                response = await client.get(
+                response = await client.post(
                     GoogleMapsService.BASE_URL,
-                    params=params,
+                    json=body,
+                    headers=headers,
                     timeout=GoogleMapsService.TIMEOUT
                 )
                 response.raise_for_status()
@@ -67,27 +80,39 @@ class GoogleMapsService:
                 data = response.json()
                 
                 # Check for valid response
-                if data.get("status") != "OK" or not data.get("rows"):
-                    print(f"⚠️ Google Maps API: {data.get('status')}")
+                if not data.get("routes") or len(data["routes"]) == 0:
+                    print(f"⚠️ Google Maps Routes API: No routes found")
                     return None
                 
-                element = data["rows"][0]["elements"][0]
-                if element.get("status") != "OK":
-                    return None
+                route = data["routes"][0]
+                
+                # Sum up legs to get total distance and duration
+                total_distance = 0
+                total_duration = 0
+                
+                if route.get("legs"):
+                    for leg in route["legs"]:
+                        if "distanceMeters" in leg:
+                            total_distance += leg["distanceMeters"]
+                        if "duration" in leg:
+                            # Parse duration string like "1234s"
+                            duration_str = leg["duration"]
+                            total_duration += int(duration_str.rstrip('s'))
                 
                 return {
-                    "distance_m": element["distance"]["value"],
-                    "duration_min": element["duration"]["value"] // 60,
+                    "distance_m": total_distance,
+                    "duration_min": total_duration // 60,
                 }
                 
         except Exception as e:
-            print(f"❌ Google Maps error: {e}")
+            print(f"❌ Google Maps Routes API error: {e}")
             return None
     
     @staticmethod
     async def get_round_trip_duration(
         airport_code: str,
         to_coords: str,
+        mode: str = "transit",
     ) -> Optional[int]:
         """
         Get round-trip duration from airport to location and back
@@ -95,6 +120,7 @@ class GoogleMapsService:
         Args:
             airport_code: IATA code (e.g., "AMS")
             to_coords: destination coordinates "52.3600,4.8852"
+            mode: "transit" for public transport, "driving" for car/taxi
         
         Returns:
             total minutes for round trip, or None if API fails
@@ -108,7 +134,7 @@ class GoogleMapsService:
         result = await GoogleMapsService.get_distance_and_duration(
             from_coords=airport_coords,
             to_coords=to_coords,
-            mode="transit"
+            mode=mode
         )
         
         if not result:
