@@ -8,8 +8,8 @@ import asyncio
 from typing import Optional, List
 from datetime import datetime
 from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, AirportInfo, BufferBreakdown
-from services.flight_data import FlightDataService
-from services.gemini_ai import GeminiVerdictService
+from services.gemini_ai import GeminiActivityService
+from services.google_maps import GoogleMapsService
 
 
 # Airport configuration (migrated from frontend)
@@ -183,41 +183,26 @@ def get_suggestions_for_city_time(airport_code: str, city_time_minutes: int) -> 
     ]
 
 
-def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
+async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     """
-    Generate layover plan based on flight info and passport, optional flight_number
+    Generate layover plan based on flight info and passport
+    
+    Args:
+        input_data: PlannerInput with arrival/departure times, airport, passport, optional flight number
     
     Returns:
         PlannerOutput with verdict, timeline, suggestions, etc.
-        None if input is invalid
     """
     
-    # MVP: Only support Lisbon for now
-    if input_data.airport_code != "LIS":
-        raise ValueError(f"Airport {input_data.airport_code} not yet supported. Currently only LIS (Lisbon) is available.")
-    
+    # Support all airports now
     airport_config = AIRPORTS_CONFIG.get(input_data.airport_code)
     if not airport_config:
-        return None
-    
-    # If flight number provided, try to lookup actual times
-    arrival_time = input_data.arrival_time
-    departure_time = input_data.departure_time
-    
-    if input_data.flight_number:
-        try:
-            # This is synchronous context, but flight_data returns async
-            # We'll skip real lookup for now in sync context
-            # In production, this would be in an async route handler
-            print(f"ℹ️ Flight {input_data.flight_number} provided - using entered times (real lookup in async context)")
-        except Exception as e:
-            print(f"⚠️ Could not lookup flight {input_data.flight_number}: {e}")
-            # Fall through to use provided times
+        raise ValueError(f"Airport {input_data.airport_code} not supported")
     
     # Calculate total available time
-    total_minutes = calculate_minutes_between(arrival_time, departure_time)
+    total_minutes = calculate_minutes_between(input_data.arrival_time, input_data.departure_time)
     if total_minutes <= 0:
-        return None
+        raise ValueError("Departure time must be after arrival time")
     
     # Calculate immigration buffer
     immigration_buffer = get_immigration_buffer(input_data.passport_region, input_data.airport_code)
@@ -236,58 +221,102 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     # Calculate city time (usable minus round-trip transport)
     round_trip_transport = airport_config["transport_to_city_min"] * 2
     city_time_minutes = max(0, usable_minutes - round_trip_transport)
-    available_time_minutes = usable_minutes  # Available before needing to return
+    available_time_minutes = usable_minutes
     
-    # Determine verdict
+    # Determine base verdict based on time available
     if usable_minutes < round_trip_transport + 30:
         verdict = "stay"
-        headline = "Stay airside on this one."
-        message = f"By the time you cleared immigration and rode into {airport_config['city']}, you'd be turning right back around. Grab a proper meal in the terminal — {airport_config['name']} is genuinely nice — and save the city for the next layover."
     elif city_time_minutes < 75:
         verdict = "tight"
-        headline = f"Doable — pick one thing in {airport_config['city']} and move."
-        message = f"You've got about {format_duration(city_time_minutes)} on the ground. Enough for one good thing, not three. Set an alarm for the turnaround and keep it tight."
     else:
         verdict = "safe"
-        headline = f"You've got a solid {format_duration(city_time_minutes)} in {airport_config['city']}."
-        vibe_first_part = airport_config["vibe"].split(",")[0].strip()
-        message = f"Plenty of room to {vibe_first_part} and still be back at your gate without a sprint. Go."
     
-    # Get relevant suggestions
-    suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+    # Get activity recommendations from Gemini
+    gemini_activities = []
+    reachable_activities = []
     
-    # Try to enhance with Gemini AI
     try:
-        gemini_service = GeminiVerdictService()
-        gemini_result = gemini_service.generate_verdict(
+        gemini_service = GeminiActivityService()
+        gemini_activities = gemini_service.generate_activities(
             airport_city=airport_config["city"],
             available_minutes=city_time_minutes,
             passport_region=input_data.passport_region,
-            airport_vibe=airport_config["vibe"],
-            activity_suggestions=[
-                {
-                    "emoji": s.emoji,
-                    "title": s.title,
-                    "min_time_needed": s.minTimeNeeded,
-                }
-                for s in suggestions_list
-            ],
+            airport_iata=input_data.airport_code,
         )
-        # Use Gemini-enhanced verdict
-        headline = gemini_result["enhanced_message"]
-        message = gemini_result["verdict_description"]
-        verdict = gemini_result["verdict"]
+        
+        print(f"✈️ Got {len(gemini_activities)} activity suggestions from Gemini")
+        
+        # Validate activities with Google Maps - get real transit times
+        for activity in gemini_activities:
+            coords = f"{activity['latitude']},{activity['longitude']}"
+            round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
+                input_data.airport_code,
+                coords
+            )
+            
+            # If Google Maps call failed, use Gemini's time estimate
+            if round_trip_minutes is None:
+                print(f"⚠️ Could not verify travel time for {activity['title']}, using Gemini estimate")
+                round_trip_minutes = activity.get("minTimeNeeded", 60)
+            
+            # Check if activity is reachable
+            actual_activity_time = city_time_minutes - round_trip_minutes
+            if actual_activity_time >= 15:  # At least 15 minutes to do the activity
+                reachable_activities.append({
+                    "emoji": activity["emoji"],
+                    "title": activity["title"],
+                    "blurb": activity["description"],
+                    "minTimeNeeded": activity.get("minTimeNeeded", round_trip_minutes - 20),
+                    "roundTripMinutes": round_trip_minutes,
+                    "coordinates": coords,
+                })
+        
+        print(f"✅ {len(reachable_activities)} activities are reachable")
+        
     except Exception as e:
-        print(f"⚠️ Gemini API unavailable: {e}. Using fallback verdict.")
-        # Use hardcoded messages (already set abovea sprint. Go."
+        print(f"⚠️ Gemini activity generation failed: {e}. Using fallback.")
+        gemini_activities = []
     
-    # Get relevant suggestions
-    suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+    # Build suggestions from reachable activities or fallback
+    if reachable_activities:
+        suggestions_list = [
+            Suggestion(
+                emoji=a["emoji"],
+                title=a["title"],
+                blurb=a["blurb"],
+                minTimeNeeded=a["minTimeNeeded"],
+            )
+            for a in reachable_activities[:3]
+        ]
+    else:
+        suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+    
+    # Generate witty verdict copy from Gemini
+    headline = ""
+    try:
+        gemini_service = GeminiActivityService()
+        headline = gemini_service.generate_verdict_copy(
+            verdict=verdict,
+            available_minutes=city_time_minutes,
+            airport_city=airport_config["city"],
+            activities=gemini_activities[:2] if gemini_activities else [],
+        )
+    except Exception as e:
+        print(f"⚠️ Gemini copy generation failed: {e}")
+        headline = self._fallback_headline(verdict, city_time_minutes, airport_config["city"])
+    
+    # Create verdict message
+    if verdict == "stay":
+        message = f"By the time you cleared immigration and rode into {airport_config['city']}, you'd be turning right back around. Grab a proper meal in the terminal — {airport_config['name']} is genuinely nice — and save the city for the next layover."
+    elif verdict == "tight":
+        message = f"You've got about {format_duration(city_time_minutes)} on the ground. Enough for one good thing, not three. Set an alarm for the turnaround and keep it tight."
+    else:  # safe
+        vibe_first_part = airport_config["vibe"].split(",")[0].strip()
+        message = f"Plenty of room to {vibe_first_part} and still be back at your gate without a sprint. Go."
     
     # Build timeline segments
     timeline_segments = []
     
-    # Disembark + immigration
     timeline_segments.append(
         TimelineSegment(
             label="Disembark + immigration",
@@ -296,8 +325,7 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         )
     )
     
-    # Travel to city
-    if usable_minutes >= round_trip_transport + 30:
+    if verdict != "stay":
         timeline_segments.append(
             TimelineSegment(
                 label=f"Travel to city ({format_duration(airport_config['transport_to_city_min'])})",
@@ -306,7 +334,6 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
             )
         )
         
-        # Activity time
         timeline_segments.append(
             TimelineSegment(
                 label="Activity time",
@@ -315,7 +342,6 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
             )
         )
         
-        # Travel back
         timeline_segments.append(
             TimelineSegment(
                 label=f"Travel back ({format_duration(airport_config['transport_to_city_min'])})",
@@ -324,10 +350,9 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
             )
         )
     
-    # Security + gate buffer
     timeline_segments.append(
         TimelineSegment(
-            label=f"Re-entry security + buffer",
+            label="Re-entry security + buffer",
             duration_minutes=airport_config["reentry_security_min"] + airport_config["walk_to_gate_min"] + airport_config["checkin_cutoff_min"],
             color="orange",
         )
@@ -376,3 +401,13 @@ def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         safety_buffer_breakdown=safety_buffer_dict,
         buffer_breakdown=buffer_breakdown_list,
     )
+
+
+def _fallback_headline(verdict: str, minutes: int, city: str) -> str:
+    """Fallback headline if Gemini fails"""
+    if verdict == "safe":
+        return f"You've got {minutes} solid minutes in {city}. Time to explore!"
+    elif verdict == "tight":
+        return f"Possible, but you'll need to move fast in {city}."
+    else:
+        return f"Play it safe and stay at the airport."
