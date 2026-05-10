@@ -167,3 +167,33 @@ Format: Return ONLY valid JSON array, nothing else."""
             return f"Tight timeline but doable—move fast! ⏰"
         else:
             return f"Stay cozy in the airport, {city} can wait 😊"
+    
+    def generate_place_description(
+        self,
+        place_name: str,
+        place_types: List[str],
+        rating: float,
+        user_ratings_total: int,
+    ) -> str:
+        """
+        Generate a witty description for a place based on its data
+        
+        Args:
+            place_name: Name of the place
+            place_types: Types/categories of the place
+            rating: Google rating (1-5)
+            user_ratings_total: Number of reviews
+        
+        Returns:
+            Short witty description
+        """
+        place_type = place_types[0] if place_types else "attraction"
+        
+        prompt_text = f"Write ONE short, witty description (max 10 words) for '{place_name}', a {place_type} with {rating}/5 stars from {user_ratings_total} visitors. Make it compelling and fun."
+        
+        try:
+            response = self.llm.invoke(prompt_text)
+            return response.content.strip()[:80]  # Cap at 80 chars
+        except Exception as e:
+            print(f"⚠️ Place description generation failed: {e}")
+            return f"{place_name} - {rating}/5 stars ({user_ratings_total} reviews)"

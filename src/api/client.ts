@@ -39,6 +39,22 @@ export interface ActivityItinerary {
   steps: ActivityStep[];
 }
 
+export interface PlaceOption {
+  place_id: string;
+  name: string;
+  description: string;
+  rating: number;
+  user_ratings_total: number;
+  coordinates: string;
+  address: string;
+  types: string[];
+  photo_url?: string;
+  photographer_name?: string;  // For Unsplash attribution
+  photographer_url?: string;  // Link to photographer profile with UTM params
+  unsplash_url?: string;  // Link back to Unsplash with UTM params
+  download_location?: string;  // Unsplash download tracking endpoint
+}
+
 export interface Activity {
   emoji: string;
   name: string;
@@ -54,13 +70,20 @@ export interface PlanResponse {
   activity_itinerary: ActivityItinerary;
   available_time_minutes: number;
   city_time_minutes: number;
+  total_minutes: number;
+  buffer_minutes: number;
   suggestions: Array<{
     emoji: string;
     title: string;
     blurb: string;
     minTimeNeeded: number;
   }>;
+  place_options: PlaceOption[];
   safety_buffer_breakdown: Record<string, number>;
+  buffer_breakdown: Array<{
+    label: string;
+    minutes: number;
+  }>;
 }
 
 /**

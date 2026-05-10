@@ -4,8 +4,9 @@ import { PlannerForm } from "@/components/gateaway/PlannerForm";
 import { Verdict } from "@/components/gateaway/Verdict";
 import { Timeline } from "@/components/gateaway/Timeline";
 import { TimelineFlowchart } from "@/components/gateaway/TimelineFlowchart";
+import { PlaceOptions } from "@/components/gateaway/PlaceOptions";
 import { Suggestions } from "@/components/gateaway/Suggestions";
-import { submitPlannerForm, PlanResponse } from "@/api/client";
+import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { AirportCode, PassportRegion, formatDuration } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
 
@@ -13,6 +14,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 type PlanResult = PlanResponse & {
   totalMinutes: number;
   bufferMinutes: number;
+  cityTimeMinutes: number;
   bufferBreakdown: { label: string; minutes: number }[];
   usableMinutes: number;
   headline: string;
@@ -36,6 +38,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanResult | null>(null);
+  const [selectedPlaces, setSelectedPlaces] = useState<PlaceOption[]>([]);
 
   useEffect(() => {
     if (!submitted) return;
@@ -60,6 +63,7 @@ const Index = () => {
           ...response,
           totalMinutes: response.total_minutes,
           bufferMinutes: response.buffer_minutes,
+          cityTimeMinutes: response.city_time_minutes,
           bufferBreakdown: response.buffer_breakdown.map((b) => ({
             label: b.label,
             minutes: b.minutes,
@@ -151,6 +155,24 @@ const Index = () => {
       {plan && !loading && (
         <section className="mt-6 space-y-6">
           <Verdict plan={plan} />
+          
+          {/* Place Options - Interactive selection */}
+          {plan.place_options && plan.place_options.length > 0 && (
+            <PlaceOptions 
+              places={plan.place_options}
+              onPlaceSelect={(place) => {
+                // Trigger Unsplash download tracking (required by API guidelines)
+                if (place.download_location) {
+                  fetch(place.download_location, { method: 'GET' }).catch(() => {
+                    // Silently fail - tracking is optional
+                  });
+                }
+                
+                setSelectedPlaces([...selectedPlaces, place]);
+                alert(`✅ Added ${place.name} to your itinerary!`);
+              }}
+            />
+          )}
           
           {/* Activity Itinerary Flowchart */}
           <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
