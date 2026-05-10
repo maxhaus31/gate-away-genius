@@ -40,6 +40,23 @@ class Suggestion(BaseModel):
     minTimeNeeded: int
 
 
+class PlaceOption(BaseModel):
+    """Suggested place that user can select and add to plan"""
+    place_id: str
+    name: str
+    description: str  # Witty Gemini-generated description
+    rating: float
+    user_ratings_total: int
+    coordinates: str  # "lat,lng"
+    address: str
+    types: List[str]
+    photo_url: Optional[str] = None  # URL to place photo (hotlinked from Unsplash or Google Maps)
+    photographer_name: Optional[str] = None  # Photographer name (for Unsplash attribution)
+    photographer_url: Optional[str] = None  # Link to photographer profile (with UTM params)
+    unsplash_url: Optional[str] = None  # Link back to Unsplash (with UTM params)
+    download_location: Optional[str] = None  # Unsplash download tracking endpoint
+
+
 class AirportInfo(BaseModel):
     """Airport configuration and metadata"""
     code: str
@@ -82,6 +99,7 @@ class PlannerOutput(BaseModel):
     # Airport and suggestions
     airport: AirportInfo
     suggestions: List[Suggestion]
+    place_options: List[PlaceOption]  # Suggested places user can select
     immigration_buffer: int  # Immigration buffer based on passport region
     safety_buffer_breakdown: dict  # Detailed breakdown of buffers
     buffer_breakdown: List[BufferBreakdown]  # List of buffer items

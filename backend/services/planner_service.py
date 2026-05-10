@@ -7,9 +7,11 @@ Migrated from src/lib/gateaway-data.ts
 import asyncio
 from typing import Optional, List
 from datetime import datetime
-from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, AirportInfo, BufferBreakdown, ActivityStep, ActivityItinerary
+from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, AirportInfo, BufferBreakdown, ActivityStep, ActivityItinerary, PlaceOption
 from services.gemini_ai import GeminiActivityService
 from services.google_maps import GoogleMapsService
+from services.places_service import PlacesService
+from services.unsplash import UnsplashService
 
 # Security limit: Max Google Maps API calls per plan generation
 # Each activity can use 1 call, set this to prevent budget overruns
@@ -187,6 +189,88 @@ def get_suggestions_for_city_time(airport_code: str, city_time_minutes: int) -> 
     ]
 
 
+async def get_place_options_with_photos(airport_code: str, city_time_minutes: int) -> List[PlaceOption]:
+    """
+    Get fallback place options with photos from Unsplash API
+    Follows Unsplash API guidelines for attribution and download tracking
+    """
+    place_options_data = {
+        "LIS": [
+            {"name": "Praça do Comércio", "description": "Historic riverside plaza with stunning views.", "search_query": "lisbon plaza"},
+            {"name": "Pastéis de Nata at Manteigaria", "description": "Famous pastry shop - don't miss the original custard tart.", "search_query": "portuguese pastry"},
+            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint"},
+            {"name": "Tram 28", "description": "Iconic yellow tram through the historic Alfama district.", "search_query": "lisbon tram"},
+            {"name": "Café Majestic", "description": "Historic café with Belle Époque elegance and great coffee.", "search_query": "portuguese cafe"},
+        ],
+        "AMS": [
+            {"name": "Amsterdam Canals", "description": "UNESCO-listed canal ring - quintessential Amsterdam.", "search_query": "amsterdam canal"},
+            {"name": "Rijksmuseum", "description": "World-class art museum - home to masterpieces.", "search_query": "museum art"},
+            {"name": "Jordaan District", "description": "Charming neighborhood with galleries, cafés, and antique shops.", "search_query": "amsterdam neighborhood"},
+            {"name": "Anne Frank House", "description": "Moving historical museum - book ahead online.", "search_query": "amsterdam history"},
+            {"name": "Bitterballen & Brown Café", "description": "Traditional Dutch snack in a cozy local pub.", "search_query": "dutch food"},
+        ],
+        "SIN": [
+            {"name": "Gardens by the Bay", "description": "Futuristic supertrees and enchanting light show.", "search_query": "singapore gardens"},
+            {"name": "Jewel Changi - Waterfall", "description": "World's tallest indoor waterfall - don't miss it!", "search_query": "waterfall"},
+            {"name": "Hawker Chan - Chicken Rice", "description": "Michelin-starred street food - legend in a stall.", "search_query": "singapore food"},
+            {"name": "Marina Bay Sands Observation Deck", "description": "57th floor views over the entire skyline.", "search_query": "singapore skyline"},
+            {"name": "Orchard Road Shopping", "description": "Luxury and local brands on Singapore's main drag.", "search_query": "shopping"},
+        ],
+    }
+    
+    places = place_options_data.get(airport_code, [])
+    
+    # Filter places that fit in available time
+    fitting_places = [
+        p for p in places 
+        if city_time_minutes >= 75  # Most activities need at least 75 min
+    ]
+    
+    if not fitting_places:
+        fitting_places = places
+    
+    # Fetch photos from Unsplash for each place
+    result = []
+    for place in fitting_places[:5]:
+        # Search Unsplash for photos of this place
+        photos = await UnsplashService.search_photos(
+            query=place["search_query"],
+            per_page=1  # Get the top photo
+        )
+        
+        if photos:
+            photo = photos[0]
+            result.append(PlaceOption(
+                place_id=f"fallback_{place['name'].replace(' ', '_').lower()}",
+                name=place["name"],
+                description=place["description"],
+                rating=4.5,  # Fallback rating
+                user_ratings_total=0,
+                coordinates="0,0",
+                address="",
+                types=["point_of_interest"],
+                photo_url=photo["url"],  # Hotlinked Unsplash photo
+                photographer_name=photo["photographer"],
+                photographer_url=photo["photographer_url"],
+                unsplash_url=photo["unsplash_url"],
+                download_location=photo["download_location"],
+            ))
+        else:
+            # Fallback without photo if Unsplash fails
+            result.append(PlaceOption(
+                place_id=f"fallback_{place['name'].replace(' ', '_').lower()}",
+                name=place["name"],
+                description=place["description"],
+                rating=4.5,
+                user_ratings_total=0,
+                coordinates="0,0",
+                address="",
+                types=["point_of_interest"],
+            ))
+    
+    return result
+
+
 async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     """
     Generate layover plan based on flight info and passport
@@ -235,90 +319,168 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     else:
         verdict = "safe"
     
-    # Get activity recommendations from Gemini
-    gemini_activities = []
-    reachable_activities = []
+    # Get activity recommendations
+    place_options: List[PlaceOption] = []
+    suggestions_list: List[Suggestion] = []
     
+    # Try Places API first, fall back to Gemini if not available
     try:
-        gemini_service = GeminiActivityService()
-        gemini_activities = gemini_service.generate_activities(
-            airport_city=airport_config["city"],
+        # Get popular attractions using Places API
+        places = await PlacesService.find_attractions(
+            airport_code=input_data.airport_code,
             available_minutes=city_time_minutes,
-            passport_region=input_data.passport_region,
-            airport_iata=input_data.airport_code,
+            transport_mode=input_data.transport_mode,
+            max_places=5
         )
         
-        print(f"✈️ Got {len(gemini_activities)} activity suggestions from Gemini")
-        
-        # Validate activities with Google Maps - get real transit times
-        # Track API calls to stay within budget limit
-        maps_call_count = 0
-        
-        for activity in gemini_activities:
-            coords = f"{activity['latitude']},{activity['longitude']}"
-            round_trip_minutes = None
+        if places:
+            print(f"🏆 Found {len(places)} top places to visit")
             
-            # Only call Google Maps if we haven't hit the limit
-            if maps_call_count < MAX_GOOGLE_MAPS_CALLS:
-                round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
-                    input_data.airport_code,
-                    coords,
-                    mode=input_data.transport_mode
-                )
-                maps_call_count += 1
-            else:
-                print(f"⚠️ Google Maps API limit ({MAX_GOOGLE_MAPS_CALLS}) reached, using Gemini estimates for remaining activities")
+            # Check if we can reach these places within available time
+            maps_call_count = 0
+            for place in places:
+                # Check if we can reach this place within available time
+                if maps_call_count < MAX_GOOGLE_MAPS_CALLS:
+                    round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
+                        input_data.airport_code,
+                        place["coordinates"],
+                        mode=input_data.transport_mode
+                    )
+                    maps_call_count += 1
+                else:
+                    print(f"⚠️ Google Maps API limit reached")
+                    round_trip_minutes = None
+                
+                # If we can't calculate real time, estimate it
+                if round_trip_minutes is None:
+                    round_trip_minutes = 60  # Fallback estimate
+                
+                # Only add if reachable (at least 15 min to spend there)
+                if city_time_minutes - round_trip_minutes >= 15:
+                    place_options.append(PlaceOption(
+                        place_id=place.get("place_id", "unknown"),
+                        name=place["name"],
+                        description=place.get("description", f"{place['name']} - {place['rating']}/5 stars"),
+                        rating=place["rating"],
+                        user_ratings_total=place["user_ratings_total"],
+                        coordinates=place["coordinates"],
+                        address=place["address"],
+                        types=place["types"],
+                        photo_url=place.get("photo_url"),
+                    ))
             
-            # If Google Maps call failed or skipped, use Gemini's time estimate
-            if round_trip_minutes is None:
-                print(f"⚠️ Could not verify travel time for {activity['title']}, using Gemini estimate")
-                round_trip_minutes = activity.get("minTimeNeeded", 60)
+            print(f"✅ {len(place_options)} places are reachable")
             
-            # Check if activity is reachable
-            actual_activity_time = city_time_minutes - round_trip_minutes
-            if actual_activity_time >= 15:  # At least 15 minutes to do the activity
-                reachable_activities.append({
-                    "emoji": activity["emoji"],
-                    "title": activity["title"],
-                    "blurb": activity["description"],
-                    "minTimeNeeded": activity.get("minTimeNeeded", round_trip_minutes - 20),
-                    "roundTripMinutes": round_trip_minutes,
-                    "coordinates": coords,
-                })
-        
-        print(f"✅ {len(reachable_activities)} activities are reachable")
-        
-    except Exception as e:
-        print(f"⚠️ Gemini activity generation failed: {e}. Using fallback.")
-        gemini_activities = []
+            # Build suggestions from top places
+            if place_options:
+                suggestions_list = [
+                    Suggestion(
+                        emoji="⭐",
+                        title=p.name,
+                        blurb=p.description,
+                        minTimeNeeded=45,
+                    )
+                    for p in place_options[:3]
+                ]
+        else:
+            print("⚠️ No places found via Places API, using Gemini fallback")
+            raise Exception("Places API returned no results")
     
-    # Build suggestions from reachable activities or fallback
-    if reachable_activities:
-        suggestions_list = [
-            Suggestion(
-                emoji=a["emoji"],
-                title=a["title"],
-                blurb=a["blurb"],
-                minTimeNeeded=a["minTimeNeeded"],
+    except Exception as e:
+        print(f"⚠️ Places API unavailable: {e}. Using Gemini activity generation.")
+        place_options = []
+        
+        # Fallback to Gemini-based activity generation
+        try:
+            gemini_service = GeminiActivityService()
+            gemini_activities = gemini_service.generate_activities(
+                airport_city=airport_config["city"],
+                available_minutes=city_time_minutes,
+                passport_region=input_data.passport_region,
+                airport_iata=input_data.airport_code,
             )
-            for a in reachable_activities[:3]
-        ]
-    else:
-        suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+            
+            print(f"✈️ Got {len(gemini_activities)} activity suggestions from Gemini")
+            
+            # Validate activities with Google Maps - get real transit times
+            maps_call_count = 0
+            reachable_activities = []
+            
+            for activity in gemini_activities:
+                coords = f"{activity['latitude']},{activity['longitude']}"
+                round_trip_minutes = None
+                
+                # Only call Google Maps if we haven't hit the limit
+                if maps_call_count < MAX_GOOGLE_MAPS_CALLS:
+                    round_trip_minutes = await GoogleMapsService.get_round_trip_duration(
+                        input_data.airport_code,
+                        coords,
+                        mode=input_data.transport_mode
+                    )
+                    maps_call_count += 1
+                else:
+                    print(f"⚠️ Google Maps API limit ({MAX_GOOGLE_MAPS_CALLS}) reached")
+                
+                # If Google Maps call failed or skipped, use Gemini's time estimate
+                if round_trip_minutes is None:
+                    print(f"⚠️ Could not verify travel time for {activity['title']}, using Gemini estimate")
+                    round_trip_minutes = activity.get("minTimeNeeded", 60)
+                
+                # Check if activity is reachable
+                actual_activity_time = city_time_minutes - round_trip_minutes
+                if actual_activity_time >= 15:  # At least 15 minutes to do the activity
+                    reachable_activities.append({
+                        "emoji": activity["emoji"],
+                        "title": activity["title"],
+                        "blurb": activity["description"],
+                        "minTimeNeeded": activity.get("minTimeNeeded", round_trip_minutes - 20),
+                        "roundTripMinutes": round_trip_minutes,
+                        "coordinates": coords,
+                    })
+            
+            print(f"✅ {len(reachable_activities)} activities are reachable")
+            
+            # Build suggestions from reachable activities
+            if reachable_activities:
+                suggestions_list = [
+                    Suggestion(
+                        emoji=a["emoji"],
+                        title=a["title"],
+                        blurb=a["blurb"],
+                        minTimeNeeded=a["minTimeNeeded"],
+                    )
+                    for a in reachable_activities[:3]
+                ]
+            else:
+                suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+        
+        except Exception as gemini_error:
+            print(f"⚠️ Gemini also failed: {gemini_error}")
+            suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
+    
+    # If place_options is still empty, use fallback with photos
+    if not place_options:
+        print(f"📸 Using fallback places with photos from Unsplash")
+        place_options = await get_place_options_with_photos(input_data.airport_code, city_time_minutes)
     
     # Generate witty verdict copy from Gemini
     headline = ""
     try:
         gemini_service = GeminiActivityService()
+        # Convert place options to activity format for verdict generation
+        activities_for_verdict = [
+            {"title": p.name, "description": p.description}
+            for p in place_options[:2]
+        ] if place_options else []
         headline = gemini_service.generate_verdict_copy(
             verdict=verdict,
             available_minutes=city_time_minutes,
             airport_city=airport_config["city"],
-            activities=gemini_activities[:2] if gemini_activities else [],
+            activities=activities_for_verdict,
         )
     except Exception as e:
         print(f"⚠️ Gemini copy generation failed: {e}")
-        headline = self._fallback_headline(verdict, city_time_minutes, airport_config["city"])
+        headline = _fallback_headline(verdict, city_time_minutes, airport_config["city"])
     
     # Create verdict message
     if verdict == "stay":
@@ -483,6 +645,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         city_time_minutes=city_time_minutes,
         airport=airport_info,
         suggestions=suggestions_list,
+        place_options=place_options,
         immigration_buffer=immigration_buffer,
         safety_buffer_breakdown=safety_buffer_dict,
         buffer_breakdown=buffer_breakdown_list,
