@@ -8,6 +8,7 @@ class PlannerInput(BaseModel):
     airport_code: str  # "LIS", "AMS", "SIN"
     passport_region: str  # "EU", "US", "OTHER"
     flight_number: Optional[str] = None  # e.g., "BA 284" for real flight lookup
+    transport_mode: str = "transit"  # "transit" for public transport, "driving" for car/taxi
 
 
 # Response models
@@ -17,12 +18,43 @@ class TimelineSegment(BaseModel):
     color: str
 
 
+class ActivityStep(BaseModel):
+    """Single activity in the itinerary"""
+    type: str  # "airport", "travel", "activity"
+    emoji: str  # Icon representation
+    title: str  # "Lisbon Airport", "Travel to Pastel de Nata", etc.
+    duration_minutes: int
+    coordinates: Optional[str] = None  # For activities: "lat,lng"
+
+
+class ActivityItinerary(BaseModel):
+    """Detailed step-by-step itinerary for the layover"""
+    steps: List[ActivityStep]  # Ordered journey from airport -> activities -> airport
+
+
 class Suggestion(BaseModel):
     """Activity suggestion for a layover"""
     emoji: str
     title: str
     blurb: str
     minTimeNeeded: int
+
+
+class PlaceOption(BaseModel):
+    """Suggested place that user can select and add to plan"""
+    place_id: str
+    name: str
+    description: str  # Witty Gemini-generated description
+    rating: float
+    user_ratings_total: int
+    coordinates: str  # "lat,lng"
+    address: str
+    types: List[str]
+    photo_url: Optional[str] = None  # URL to place photo (hotlinked from Unsplash or Google Maps)
+    photographer_name: Optional[str] = None  # Photographer name (for Unsplash attribution)
+    photographer_url: Optional[str] = None  # Link to photographer profile (with UTM params)
+    unsplash_url: Optional[str] = None  # Link back to Unsplash (with UTM params)
+    download_location: Optional[str] = None  # Unsplash download tracking endpoint
 
 
 class AirportInfo(BaseModel):
@@ -55,6 +87,7 @@ class PlannerOutput(BaseModel):
     
     # Timeline data
     timeline: List[TimelineSegment]
+    activity_itinerary: ActivityItinerary  # Detailed step-by-step breakdown for visualization
     
     # Time breakdown
     total_minutes: int  # Total layover time
@@ -66,6 +99,7 @@ class PlannerOutput(BaseModel):
     # Airport and suggestions
     airport: AirportInfo
     suggestions: List[Suggestion]
+    place_options: List[PlaceOption]  # Suggested places user can select
     immigration_buffer: int  # Immigration buffer based on passport region
     safety_buffer_breakdown: dict  # Detailed breakdown of buffers
     buffer_breakdown: List[BufferBreakdown]  # List of buffer items

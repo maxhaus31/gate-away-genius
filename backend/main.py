@@ -30,9 +30,10 @@ async def create_plan(input_data: PlannerInput) -> PlannerOutput:
     Main endpoint: receives flight info, returns layover verdict + suggestions
     
     Uses planner_service to calculate verdict based on flight times and airport rules.
+    Integrates with Google Maps for real transit times and Gemini for activity suggestions.
     """
     try:
-        result = generate_plan(input_data)
+        result = await generate_plan(input_data)
         if result is None:
             raise HTTPException(status_code=400, detail="Invalid input data")
         return result
