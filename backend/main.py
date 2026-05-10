@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import config
 from models import PlannerInput, PlannerOutput
 from services.planner_service import generate_plan
-from services.flight_data import get_flight_times
+from services.schiphol_api import SchipholService
 
 app = FastAPI(title="GateAway Genius Backend", version="0.1.0")
 
@@ -68,27 +68,29 @@ async def get_airport_details(airport_code: str):
 
 
 @app.get("/api/flights/lookup")
-async def lookup_flight(flight_number: str, airport_code: str):
+async def lookup_flight(flight_number: str, date: str = None):
     """
-    Look up a flight by number and arrival airport
-    
+    Look up a Schiphol flight by IATA name (e.g. "KL1234").
+
     Query params:
-    - flight_number: IATA code (e.g., "LH780")
-    - airport_code: IATA code (e.g., "SIN")
-    
-    Returns arrival time and date, or error if not found
+    - flight_number: IATA flight name (e.g., "KL1234")
+    - date: Schedule date YYYY-MM-DD (defaults to today)
+
+    Returns flight details including scheduled times, terminal, gate, and delay.
     """
-    if not flight_number or not airport_code:
-        raise HTTPException(status_code=400, detail="flight_number and airport_code required")
-    
+    if not flight_number:
+        raise HTTPException(status_code=400, detail="flight_number is required")
+
     try:
-        result = await get_flight_times(flight_number, airport_code)
-        if result is None:
+        result = await SchipholService.get_flight(flight_number, date)
+        if result.get("is_mock"):
             raise HTTPException(
                 status_code=404,
-                detail=f"Flight {flight_number} arriving at {airport_code} not found. Check the flight number and airport code."
+                detail=f"Flight {flight_number} not found. Check the flight number and date."
             )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error looking up flight: {str(e)}")
 
