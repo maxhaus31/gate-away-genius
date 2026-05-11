@@ -1,0 +1,273 @@
+{
+  "9a4d2ca8569e35de4c13": {
+    "saved_at": "2026-05-11T09:54:14.207036+00:00",
+    "data": {
+      "verdict": "safe",
+      "verdict_description": "Plenty of room to canal rings and still be back at your gate without a sprint. Go.",
+      "headline": "You've got time! Quick Amsterdam adventure incoming \u2708\ufe0f",
+      "timeline": [
+        {
+          "label": "Disembark + immigration",
+          "duration_minutes": 25,
+          "color": "red"
+        },
+        {
+          "label": "Travel to city (20 min)",
+          "duration_minutes": 20,
+          "color": "blue"
+        },
+        {
+          "label": "Activity time",
+          "duration_minutes": 210,
+          "color": "green"
+        },
+        {
+          "label": "Travel back (20 min)",
+          "duration_minutes": 20,
+          "color": "blue"
+        },
+        {
+          "label": "Re-entry security + buffer",
+          "duration_minutes": 85,
+          "color": "orange"
+        }
+      ],
+      "activity_itinerary": {
+        "steps": [
+          {
+            "type": "airport",
+            "emoji": "\u2708\ufe0f",
+            "title": "Schiphol (Arrive)",
+            "duration_minutes": 25,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\ude8c",
+            "title": "Direct train \u2192 Centraal (every 10 min)",
+            "duration_minutes": 20,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\u2b50",
+            "title": "Vondelpark",
+            "duration_minutes": 45,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\udeb6",
+            "title": "Travel between activities",
+            "duration_minutes": 15,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\u2b50",
+            "title": "A'DAM Lookout",
+            "duration_minutes": 45,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\udeb6",
+            "title": "Travel between activities",
+            "duration_minutes": 15,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\u2b50",
+            "title": "Bakers & Roasters",
+            "duration_minutes": 45,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\ude8c",
+            "title": "Return to Schiphol",
+            "duration_minutes": 20,
+            "coordinates": null
+          },
+          {
+            "type": "airport",
+            "emoji": "\ud83d\udec2",
+            "title": "Security + Gate",
+            "duration_minutes": 85,
+            "coordinates": null
+          }
+        ]
+      },
+      "total_minutes": 360,
+      "buffer_minutes": 110,
+      "usable_minutes": 250,
+      "available_time_minutes": 250,
+      "city_time_minutes": 210,
+      "airport": {
+        "code": "AMS",
+        "city": "Amsterdam",
+        "name": "Schiphol",
+        "country": "Netherlands",
+        "flag": "\ud83c\uddf3\ud83c\uddf1",
+        "transportToCityMin": 20,
+        "transportLabel": "Direct train \u2192 Centraal (every 10 min)",
+        "reentrySecurityMin": 30,
+        "walkToGateMin": 10,
+        "checkinCutoffMin": 45,
+        "vibe": "canal rings, brown caf\u00e9s, bikes everywhere"
+      },
+      "suggestions": [
+        {
+          "emoji": "\u2b50",
+          "title": "Vondelpark",
+          "blurb": "Vondelpark \u2014 4.7/5 (59376 reviews)",
+          "minTimeNeeded": 45
+        },
+        {
+          "emoji": "\u2b50",
+          "title": "A'DAM Lookout",
+          "blurb": "A'DAM Lookout \u2014 4.6/5 (29425 reviews)",
+          "minTimeNeeded": 45
+        },
+        {
+          "emoji": "\u2b50",
+          "title": "Bakers & Roasters",
+          "blurb": "Bakers & Roasters \u2014 4.6/5 (2286 reviews)",
+          "minTimeNeeded": 45
+        }
+      ],
+      "place_options": [
+        {
+          "place_id": "ChIJz3y0xeIJxkcRNcogBVV41Gw",
+          "name": "Vondelpark",
+          "description": "Vondelpark \u2014 4.7/5 (59376 reviews)",
+          "rating": 4.7,
+          "user_ratings_total": 59376,
+          "coordinates": "52.3579946,4.8686484",
+          "address": "Amsterdam",
+          "types": [
+            "park",
+            "tourist_attraction",
+            "point_of_interest",
+            "establishment"
+          ],
+          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-to0S4wtrc1-ttyxG0lAy23Wur_pgIvFy_R5OCM8AhEkZuARnGdwH3upmGIY5KTKmLDlYu2nAgDFVaf9BFfLcFlEzy8twyWl5kicN-_mxsAsH1VfSOfqJwuYZcCrTTlDrKicS_kHpzoTr8R7ga8cZdCyQMG7gxgTuARhAiNZ98M2Xjl6sG-9QRLTFY1oi7gIcZCDvfgkXBva60Rzf29yMYEvefNtmFJCHiP8jYcdtQV4ohmtgzByuvjIjpGgirfcNofy6L1FknjZcSqY9IMECyFJiwYtoePNm6Vb_bPRRqI9f3Hzi33rr2cx1CdbQevxGhCfZmPICmv6n9xTPzWwHGpB9DxAjGmjHfxeK9CE_LmKIgD7DIi8pndO7DKze2JqiDdFFmd_bilIpOXX46UW60JRt6fyBAv0pZfaMCgyvmFNHBeSFM7dk3PBLdpy6XOamXomuBrbkBb3SxrXnxjMZEc-8XKXce9DHfVZQzyfuIXllEVxKb2o6VIS2Xci4mLBYNtGE_XVh_ptRTwqRkn-VsFYvHprSa-GR1KFsJmpJxbVfC5b-DklqjlYaDUvnaezGQstgvj&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
+          "photographer_name": null,
+          "photographer_url": null,
+          "unsplash_url": null,
+          "download_location": null
+        },
+        {
+          "place_id": "ChIJu0txQLQJxkcR9gp6-ShcF6Y",
+          "name": "A'DAM Lookout",
+          "description": "A'DAM Lookout \u2014 4.6/5 (29425 reviews)",
+          "rating": 4.6,
+          "user_ratings_total": 29425,
+          "coordinates": "52.3839541,4.902064999999999",
+          "address": "IJpromenade 4, Amsterdam",
+          "types": [
+            "tourist_attraction",
+            "point_of_interest",
+            "establishment"
+          ],
+          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sxl33pUvu5Z3PcPDiZSUWZaSKmNdJ1pMwqDomi6kJLSaO-BsLI_6c46vKrLw9Xjj7Qb7WAfkyUgEp4j4e0MAUI6Rnb-5CRzr12d_SmEGiHn965N6Ln0rZoZC7iyFVwfk16FkcxXRqgIv-HUa_6S_80JxjKH90rU-9J7SU1FpEJzKrv3njNc1x-QfJ8iptWlaDzfi-GhLAsjsqYyq8SDry57nrW_TZpZ_te7RCMLwA6yX56gnWSexR1d1xf7EzakI7guiOeOiqCXJwle2nQJq4yHhQNH7hO2aaASgiRHh_fAHtgfqBjy9nYzORP1vKNk39Ihzvw7EtNw4e2ngBcZoqw03VRB380Erocyxj5bzHuqs-Js5tKfpntdwjETwZNzNx9WK1EeSBExT0EsgEmuGWJPKYIXXr9gm5isP_psOGkRACb9H9sER7zdSnxQUw9CMBv3Vyw4OyBGNjP8JBvfeIobsqXoe8dXqBFJJDni6QbzzGSKXiqmPE_Vi1cqh3cUCFIQPwqZtRSEATqA89J2F1fQYIMRfScNQ8aqxyWel5x-iep-VRLfggd1-jCqMYqftjc7-YzVj4CyA&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
+          "photographer_name": null,
+          "photographer_url": null,
+          "unsplash_url": null,
+          "download_location": null
+        },
+        {
+          "place_id": "ChIJ4S8JmqMJxkcR64Ym9WhK7pE",
+          "name": "Bakers & Roasters",
+          "description": "Bakers & Roasters \u2014 4.6/5 (2286 reviews)",
+          "rating": 4.6,
+          "user_ratings_total": 2286,
+          "coordinates": "52.37022210000001,4.9126387",
+          "address": "Kadijksplein 16, Amsterdam",
+          "types": [
+            "bakery",
+            "cafe",
+            "bar",
+            "restaurant",
+            "food",
+            "store",
+            "point_of_interest",
+            "establishment"
+          ],
+          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-tE7AWumY8XLeDr8Sxgy9A9vELhlxL_3C16AkfWcHDpAPm_7siu7eadoAIWKK5OBwZa66vbCR5uPSNYOYVp1wgDVJj7fxeJWTON8rx3qnVM43iYG1bkOKSEYUUelRRq6Yywp0fO2gbCtJLPA3id2c49AEoIYPwKN152YyAvUTD9MW54tINGvV5LOCzjjDhYcexdK5eGuG0Kp2OEDyo7vzr0FflssQaLRY9ZZEZn5uq0xH0GIXrdZ7eU7KUa-qL-vTSYR8pcQMHZCOtA2FLBsYz0pmIoyJF2fHIiVmdc52uA9niN0gPBxQtwS2yd2ky1QYPvUDVRTJm9xWhVmqwD-V-FTn9fx0kHHZky-1d2EK9rXk-D-1znGvWnpH2cMOhxzHKPXv_WlO-thJyRMo8sigCGlcjcOdZXGvjR4pEpwTBM03KujUwoRRPoMuzG0V9yETV1-5x1rgwonrvPEaKBtZXW33eMhXbmD7D8zphRbhVD5TQ-5QIlDBFe15A6dr_nt-VOi81f_hiFFPH9iPMIp4IYxy8KnDN-Cl7uE1wYDpWQzgTj9LVZ2MYO2s9Fp5CSBUx0rC8eJcNnIincvFeO6XN-_uQQow&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
+          "photographer_name": null,
+          "photographer_url": null,
+          "unsplash_url": null,
+          "download_location": null
+        },
+        {
+          "place_id": "ChIJXYYUs-kJxkcRgLEv5GixBq8",
+          "name": "Restaurant Black",
+          "description": "Restaurant Black \u2014 4.2/5 (1798 reviews)",
+          "rating": 4.2,
+          "user_ratings_total": 1798,
+          "coordinates": "52.3653534,4.884468099999999",
+          "address": "Prinsengracht 703, Amsterdam",
+          "types": [
+            "bar",
+            "restaurant",
+            "food",
+            "point_of_interest",
+            "establishment"
+          ],
+          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-t6cNgRoC1DR8c4si5RrysftiV9eFiO0iz6KiWyRxk0N1lVbJDCjadwqgKdxUtwrX_jcHEewNdKtbfXgtGXF79h1F416ZY3DdLwHrw-luji1rLSrokr-EWIqtxUdDGRgcvkMdNmlxvkV_Yo1eEGlPuwuxiSlWYJrsEuycMtBlHsTHrcMhvIcCEb0CEmNDmUnAmlcITG5HkypZ2omPBlsEI-m9Eo8NmOz4habALPRUorkz4YH69Za7nYX7T_YVEEGTSMi4VmyO5adE1T8dNsBuNE8SZl3-lBpZIXSA_owUUVXbftNDvcHaJmn4aWU3N52pKucajpj01EBQOQSIzuNf7wSqBfrc1uTRmRwGRY01UZtNt7V_3Jbs88F3QeqQaMuvAqiB1tPKQhFY1TIYSZi3_sqSDKoDbi1Q0TipWiBwx-qrmzvacv49ThaOkaDvKAglRSGcVZVrEnjXlMUaeLiK58Zj12ddcNieRfk97jdGS9_twA6dPirwVrAM1ScdBsAKfK5PI8s9zpj4Yqnfzfm0EIqRFwIO-dVKzBml86LPtJ_Z2lkjJXSI08st6AURICYEx-ZLym&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
+          "photographer_name": null,
+          "photographer_url": null,
+          "unsplash_url": null,
+          "download_location": null
+        },
+        {
+          "place_id": "ChIJLZFgVb8JxkcRSyj7Tw7IlSY",
+          "name": "Wok to Walk Damstraat",
+          "description": "Wok to Walk Damstraat \u2014 4.3/5 (1599 reviews)",
+          "rating": 4.3,
+          "user_ratings_total": 1599,
+          "coordinates": "52.3719305,4.8954868",
+          "address": "Damstraat 44, Amsterdam",
+          "types": [
+            "restaurant",
+            "food",
+            "point_of_interest",
+            "establishment"
+          ],
+          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sFFdW1x9R-qU6i8QYdAF_lOBQ4h37-2e1aXPzC4cRqTaGo5e79smUFYUeoVF9a1iJU9OcXnIympwE9mXah5WSJRw6QDBXN0soN4vIznqWopzze_VxofT0kTWBEXreNFvxGtKAKhyxgHAqXHc38hTzSVaBsYIpR_v1YVdb-10Y-5mfh_-azZYDzSYyJ-6Roq_FNJpyIK4Pq_VD1ADrCNCOd98qXka0yCVubOb9iC7TPBNujnaSL-jaACARIMhSnQOL2mZBUI8WTe-HEzlDK9UcgPgzvSPpRNkO9d05e3hJANOt_vY9BxUu8w2680f1wDouuFYthFP-QDx7qtvt3416u6Q5kTi64hRyeZzDxh-fxT92d0t03gvaPgd_PcfK7IhQe0WkJCsF_u7zMVC8noYyvM3F0zAabVkQHOzZTkhraAx7rJJGhik44GBsHTg0UHstCo29F_8rjbamCy6ngUWnYzAdy2T9LXWkb3cEcqCREECh9Z2mk6K7u1CwW-FqT9y3zzQan7DlD4lxA1ko_REX3S3X_XvX113uZNnaeML1palPS86NL7sBT-YYl2WSK1UcUeQ&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
+          "photographer_name": null,
+          "photographer_url": null,
+          "unsplash_url": null,
+          "download_location": null
+        }
+      ],
+      "immigration_buffer": 0,
+      "safety_buffer_breakdown": {
+        "disembark_and_immigration": 25,
+        "re-entry_security_amsterdam": 30,
+        "walk_to_gate": 10,
+        "check-in_/_boarding_cutoff": 45
+      },
+      "buffer_breakdown": [
+        {
+          "label": "Disembark + immigration",
+          "minutes": 25
+        },
+        {
+          "label": "Re-entry security (Amsterdam)",
+          "minutes": 30
+        },
+        {
+          "label": "Walk to gate",
+          "minutes": 10
+        },
+        {
+          "label": "Check-in / boarding cutoff",
+          "minutes": 45
+        }
+      ]
+    }
+  }
+}
