@@ -13,6 +13,7 @@ from services.google_maps import GoogleMapsService
 from services.places_service import PlacesService
 from services.schiphol_api import SchipholService
 from services.unsplash import UnsplashService
+from services import cache_service
 
 # Security limit: Max Google Maps API calls per plan generation
 # Each activity can use 1 call, set this to prevent budget overruns
@@ -302,6 +303,19 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
 
     if not arrival_time or not departure_time:
         raise ValueError("Could not resolve flight times — check flight numbers and date")
+
+    # Cache check — skip all API calls if we have a recent result for this window
+    cache_key = cache_service.make_key(
+        input_data.airport_code,
+        input_data.passport_region,
+        input_data.transport_mode,
+        arrival_time,
+        departure_time,
+    )
+    cached = cache_service.get(cache_key)
+    if cached:
+        print(f"✅ Cache hit [{cache_key}]")
+        return PlannerOutput(**cached)
 
     # Calculate total available time
     total_minutes = calculate_minutes_between(arrival_time, departure_time)
@@ -648,7 +662,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     
     activity_itinerary = ActivityItinerary(steps=itinerary_steps)
     
-    return PlannerOutput(
+    result = PlannerOutput(
         verdict=verdict,
         verdict_description=message,
         headline=headline,
@@ -666,6 +680,10 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         safety_buffer_breakdown=safety_buffer_dict,
         buffer_breakdown=buffer_breakdown_list,
     )
+
+    cache_service.set(cache_key, result.model_dump())
+    print(f"💾 Cached result [{cache_key}]")
+    return result
 
 
 def _fallback_headline(verdict: str, minutes: int, city: str) -> str:
