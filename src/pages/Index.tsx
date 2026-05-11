@@ -1,26 +1,90 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/gateaway/Header";
 import { PlannerForm } from "@/components/gateaway/PlannerForm";
 import { Verdict } from "@/components/gateaway/Verdict";
 import { Timeline } from "@/components/gateaway/Timeline";
+import { TimelineFlowchart } from "@/components/gateaway/TimelineFlowchart";
+import { PlaceOptions } from "@/components/gateaway/PlaceOptions";
 import { Suggestions } from "@/components/gateaway/Suggestions";
-import {
-  AirportCode,
-  PassportRegion,
-  buildPlan,
-} from "@/lib/gateaway-data";
+import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
+import { AirportCode, PassportRegion, formatDuration } from "@/lib/gateaway-data";
+import { AlertCircle, Loader2 } from "lucide-react";
+
+// Adapter type for frontend components (matches backend PlanResponse + local fields)
+type PlanResult = PlanResponse & {
+  totalMinutes: number;
+  bufferMinutes: number;
+  cityTimeMinutes: number;
+  bufferBreakdown: { label: string; minutes: number }[];
+  usableMinutes: number;
+  headline: string;
+  message: string;
+};
+
+// Helper: Convert "HH:MM" time to ISO date string for today
+function timeToISO(time: string): string {
+  const today = new Date().toISOString().split("T")[0];
+  return `${today}T${time}:00`;
+}
 
 const Index = () => {
   const [arrival, setArrival] = useState("10:30");
   const [departure, setDeparture] = useState("16:15");
-  const [airport, setAirport] = useState<AirportCode>("AMS");
+  const [airport, setAirport] = useState<AirportCode>("LIS"); // Changed default to LIS for MVP
   const [passport, setPassport] = useState<PassportRegion>("EU");
-  const [submitted, setSubmitted] = useState(true);
+  const [flightNumber, setFlightNumber] = useState<string>("");
+  const [transportMode, setTransportMode] = useState<"transit" | "driving">("transit");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [plan, setPlan] = useState<PlanResult | null>(null);
+  const [selectedPlaces, setSelectedPlaces] = useState<PlaceOption[]>([]);
 
-  const plan = useMemo(
-    () => (submitted ? buildPlan(arrival, departure, airport, passport) : null),
-    [arrival, departure, airport, passport, submitted],
-  );
+  useEffect(() => {
+    if (!submitted) return;
+
+    const fetchPlan = async () => {
+      setLoading(true);
+      setError(null);
+      setPlan(null);
+
+      try {
+        const response = await submitPlannerForm({
+          arrival_time: timeToISO(arrival),
+          departure_time: timeToISO(departure),
+          airport_code: airport,
+          passport_region: passport,
+          flight_number: flightNumber || undefined,
+          transport_mode: transportMode,
+        });
+
+        // Adapt response to match frontend component expectations
+        const adaptedPlan: PlanResult = {
+          ...response,
+          totalMinutes: response.total_minutes,
+          bufferMinutes: response.buffer_minutes,
+          cityTimeMinutes: response.city_time_minutes,
+          bufferBreakdown: response.buffer_breakdown.map((b) => ({
+            label: b.label,
+            minutes: b.minutes,
+          })),
+          usableMinutes: response.usable_minutes,
+          headline: response.headline,
+          message: response.verdict_description,
+        };
+
+        setPlan(adaptedPlan);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to generate plan";
+        setError(message);
+        setPlan(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlan();
+  }, [submitted, arrival, departure, airport, passport, transportMode]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
@@ -44,20 +108,78 @@ const Index = () => {
           departure={departure}
           airport={airport}
           passport={passport}
+          flightNumber={flightNumber}
+          transportMode={transportMode}
           onChange={(p) => {
             if (p.arrival !== undefined) setArrival(p.arrival);
             if (p.departure !== undefined) setDeparture(p.departure);
-            if (p.airport !== undefined) setAirport(p.airport);
-            if (p.passport !== undefined) setPassport(p.passport);
+            if (p.airport !== undefined) setAirport(p.airport as AirportCode);
+            if (p.passport !== undefined) setPassport(p.passport as PassportRegion);
+            if (p.flightNumber !== undefined) setFlightNumber(p.flightNumber);
+            if (p.transportMode !== undefined) setTransportMode(p.transportMode);
             setSubmitted(true);
           }}
           onSubmit={() => setSubmitted(true)}
         />
       </section>
 
-      {plan && (
+      {/* Loading state */}
+      {loading && (
+        <section className="mt-6">
+          <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 flex items-center justify-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span className="text-muted-foreground">Generating your plan...</span>
+          </div>
+        </section>
+      )}
+
+      {/* Error state */}
+      {error && !loading && (
+        <section className="mt-6">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 sm:p-8">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-900">Could not generate plan</h3>
+                <p className="mt-1 text-sm text-red-700">{error}</p>
+                <p className="mt-3 text-xs text-red-600">
+                  💡 Tip: Make sure the backend is running on http://localhost:8000
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Results */}
+      {plan && !loading && (
         <section className="mt-6 space-y-6">
           <Verdict plan={plan} />
+          
+          {/* Place Options - Interactive selection */}
+          {plan.place_options && plan.place_options.length > 0 && (
+            <PlaceOptions 
+              places={plan.place_options}
+              onPlaceSelect={(place) => {
+                // Trigger Unsplash download tracking (required by API guidelines)
+                if (place.download_location) {
+                  fetch(place.download_location, { method: 'GET' }).catch(() => {
+                    // Silently fail - tracking is optional
+                  });
+                }
+                
+                setSelectedPlaces([...selectedPlaces, place]);
+                alert(`✅ Added ${place.name} to your itinerary!`);
+              }}
+            />
+          )}
+          
+          {/* Activity Itinerary Flowchart */}
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Your Journey</h2>
+            <TimelineFlowchart itinerary={plan.activity_itinerary} />
+          </div>
+          
           <Timeline plan={plan} arrival={arrival} departure={departure} />
           <Suggestions plan={plan} />
         </section>

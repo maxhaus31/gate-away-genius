@@ -32,7 +32,7 @@ python main.py
 ```bash
 npm install
 npm run dev
-# Runs at http://localhost:5173
+# Runs at http://localhost:8080/
 ```
 
 ---

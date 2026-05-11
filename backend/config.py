@@ -7,11 +7,12 @@ load_dotenv()
 GOOGLE_GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
 AVIATIONSTACK_API_KEY = os.getenv("AVIATIONSTACK_API_KEY")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
 
 # Server config
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-# Validation
-if not GOOGLE_GEMINI_API_KEY:
-    raise ValueError("GOOGLE_GEMINI_API_KEY not set in .env")
+# Validation (optional for now - MVP uses hardcoded rules)
+# if not GOOGLE_GEMINI_API_KEY:
+#     raise ValueError("GOOGLE_GEMINI_API_KEY not set in .env")
