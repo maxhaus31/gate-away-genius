@@ -57,15 +57,19 @@ class GoogleMapsService:
                 "origin": {"location": {"latLng": {"latitude": from_lat, "longitude": from_lng}}},
                 "destination": {"location": {"latLng": {"latitude": to_lat, "longitude": to_lng}}},
                 "travelMode": travel_mode,
-                "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
             }
-            
+
+            # routingPreference is only valid for DRIVE, not TRANSIT
+            if travel_mode == "DRIVE":
+                body["routingPreference"] = "TRAFFIC_AWARE_OPTIMAL"
+
             if departure_time:
                 body["departureTime"] = f"2024-01-01T{departure_time:02d}:00:00Z"
-            
+
             headers = {
                 "Content-Type": "application/json",
                 "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+                "X-Goog-FieldMask": "routes.legs.duration,routes.legs.distanceMeters",
             }
             
             async with httpx.AsyncClient() as client:

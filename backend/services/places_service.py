@@ -2,6 +2,7 @@
 Places Service: Find popular attractions using Places API + LLM descriptions
 """
 
+import asyncio
 from typing import List, Optional, Dict
 from services.google_maps import GoogleMapsService
 from services.gemini_ai import GeminiActivityService
@@ -84,9 +85,10 @@ class PlacesService:
         # Get descriptions from Gemini for each place
         gemini_service = GeminiActivityService()
         
-        for place in sorted_places:
+        for i, place in enumerate(sorted_places):
+            if i > 0:
+                await asyncio.sleep(1)
             try:
-                # Use Gemini to create a witty description
                 description = gemini_service.generate_place_description(
                     place_name=place["name"],
                     place_types=place["types"],
