@@ -5,6 +5,7 @@ import { Verdict } from "@/components/gateaway/Verdict";
 import { Timeline } from "@/components/gateaway/Timeline";
 import { TimelineFlowchart } from "@/components/gateaway/TimelineFlowchart";
 import { PlaceOptions } from "@/components/gateaway/PlaceOptions";
+import { MyPlan } from "@/components/gateaway/MyPlan";
 import { Suggestions } from "@/components/gateaway/Suggestions";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion } from "@/lib/gateaway-data";
@@ -151,31 +152,50 @@ const Index = () => {
       {plan && !loading && (
         <section className="mt-6 space-y-6">
           <Verdict plan={plan} />
-          
+
           {/* Place Options - Interactive selection */}
           {plan.place_options && plan.place_options.length > 0 && (
-            <PlaceOptions 
+            <PlaceOptions
               places={plan.place_options}
+              selectedIds={new Set(selectedPlaces.map((p) => p.place_id))}
               onPlaceSelect={(place) => {
-                // Trigger Unsplash download tracking (required by API guidelines)
                 if (place.download_location) {
-                  fetch(place.download_location, { method: 'GET' }).catch(() => {
-                    // Silently fail - tracking is optional
-                  });
+                  fetch(place.download_location, { method: "GET" }).catch(() => {});
                 }
-                
-                setSelectedPlaces([...selectedPlaces, place]);
-                alert(`✅ Added ${place.name} to your itinerary!`);
+                setSelectedPlaces((prev) => [...prev, place]);
               }}
             />
           )}
-          
+
+          {/* My Plan - appears once user has added at least one place */}
+          <MyPlan
+            places={selectedPlaces}
+            cityTimeMinutes={plan.cityTimeMinutes}
+            onRemove={(id) =>
+              setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== id))
+            }
+            onMoveUp={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                return next;
+              })
+            }
+            onMoveDown={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                return next;
+              })
+            }
+          />
+
           {/* Activity Itinerary Flowchart */}
           <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-semibold text-foreground mb-4">Your Journey</h2>
             <TimelineFlowchart itinerary={plan.activity_itinerary} />
           </div>
-          
+
           <Timeline plan={plan} arrival={arrival} departure={departure} />
           <Suggestions plan={plan} />
         </section>
