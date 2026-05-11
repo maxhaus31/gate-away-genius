@@ -2,6 +2,8 @@
 Gemini AI Service: Generate activity recommendations with coordinates using httpx REST
 """
 
+import hashlib
+import time
 import httpx
 import json
 from pydantic import BaseModel, Field
@@ -11,6 +13,24 @@ from typing import List
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 PRIMARY_MODEL = "gemini-2.5-flash"
 FALLBACK_MODEL = "gemini-2.0-flash-lite"
+
+# Simple in-memory prompt cache — avoids re-hitting the API for identical prompts
+# Entries expire after 10 minutes (600s), which covers rapid repeated test submissions
+_CACHE: dict = {}
+_CACHE_TTL = 600
+
+
+def _cache_get(prompt: str):
+    key = hashlib.md5(prompt.encode()).hexdigest()
+    entry = _CACHE.get(key)
+    if entry and time.time() - entry["ts"] < _CACHE_TTL:
+        return entry["value"]
+    return None
+
+
+def _cache_set(prompt: str, value: str):
+    key = hashlib.md5(prompt.encode()).hexdigest()
+    _CACHE[key] = {"value": value, "ts": time.time()}
 
 
 class Activity(BaseModel):
@@ -37,12 +57,17 @@ def _call_gemini(prompt: str, model: str = PRIMARY_MODEL) -> str:
 
 
 def _call_gemini_with_fallback(prompt: str) -> str:
-    """Try primary model, fall back to lite on failure."""
+    """Try primary model, fall back to lite on failure. Caches results to avoid repeat hits."""
+    cached = _cache_get(prompt)
+    if cached is not None:
+        return cached
     try:
-        return _call_gemini(prompt, PRIMARY_MODEL)
+        result = _call_gemini(prompt, PRIMARY_MODEL)
     except Exception as e:
         print(f"⚠️ Primary model failed ({e}), trying fallback")
-        return _call_gemini(prompt, FALLBACK_MODEL)
+        result = _call_gemini(prompt, FALLBACK_MODEL)
+    _cache_set(prompt, result)
+    return result
 
 
 class GeminiActivityService:
@@ -127,22 +152,49 @@ Format: Return ONLY valid JSON array, nothing else."""
             print(f"⚠️ Gemini verdict generation failed: {e}")
             return self._fallback_copy(verdict, available_minutes, airport_city)
 
-    def generate_place_description(
+    def generate_place_descriptions_batch(
         self,
-        place_name: str,
-        place_types: List[str],
-        rating: float,
-        user_ratings_total: int,
-    ) -> str:
-        """Generate a witty description for a place based on its data."""
-        place_type = place_types[0] if place_types else "attraction"
-        prompt_text = f"Write ONE short, witty description (max 10 words) for '{place_name}', a {place_type} with {rating}/5 stars from {user_ratings_total} visitors. Make it compelling and fun."
+        places: List[dict],
+    ) -> dict:
+        """
+        Generate witty descriptions for multiple places in a single Gemini call.
+
+        Args:
+            places: list of dicts with keys name, types, rating, user_ratings_total
+
+        Returns:
+            dict mapping place name → description string
+        """
+        if not places:
+            return {}
+
+        lines = []
+        for i, p in enumerate(places):
+            place_type = p["types"][0] if p.get("types") else "attraction"
+            lines.append(
+                f'{i+1}. "{p["name"]}" — {place_type}, {p["rating"]}/5 stars, {p["user_ratings_total"]} reviews'
+            )
+
+        prompt_text = (
+            "For each place below, write ONE short witty description (max 10 words). "
+            "Return a JSON object where each key is the place name and the value is the description. "
+            "Return ONLY valid JSON, nothing else.\n\n"
+            + "\n".join(lines)
+        )
 
         try:
-            return _call_gemini_with_fallback(prompt_text)[:80]
+            text = _call_gemini_with_fallback(prompt_text)
+            if "```json" in text:
+                text = text.split("```json")[1].split("```")[0].strip()
+            elif "```" in text:
+                text.split("```")[1].split("```")[0].strip()
+            return json.loads(text)
         except Exception as e:
-            print(f"⚠️ Place description generation failed: {e}")
-            return f"{place_name} - {rating}/5 stars ({user_ratings_total} reviews)"
+            print(f"⚠️ Batch description generation failed: {e}")
+            return {
+                p["name"]: f"{p['name']} — {p['rating']}/5 ({p['user_ratings_total']} reviews)"
+                for p in places
+            }
 
     def _fallback_activities(self, airport_city: str) -> List[dict]:
         return [

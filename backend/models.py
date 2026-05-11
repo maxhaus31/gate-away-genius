@@ -1,14 +1,32 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Optional, List
 
 # Request model
 class PlannerInput(BaseModel):
-    arrival_time: str  # ISO format: "2024-05-01T10:00:00"
-    departure_time: str  # ISO format: "2024-05-01T14:00:00"
+    # Option A: manual timestamps
+    arrival_time: Optional[str] = None    # ISO format: "2024-05-01T10:00:00"
+    departure_time: Optional[str] = None  # ISO format: "2024-05-01T14:00:00"
+
+    # Option B: flight numbers (backend resolves times via Schiphol)
+    arrival_flight: Optional[str] = None   # e.g. "KL1234"
+    departure_flight: Optional[str] = None # e.g. "KL5678"
+    flight_date: Optional[str] = None      # "YYYY-MM-DD"; defaults to today
+
+    # Always required
     airport_code: str  # "LIS", "AMS", "SIN"
     passport_region: str  # "EU", "US", "OTHER"
-    flight_number: Optional[str] = None  # e.g., "BA 284" for real flight lookup
-    transport_mode: str = "transit"  # "transit" for public transport, "driving" for car/taxi
+    transport_mode: str = "transit"  # "transit" or "driving"
+
+    @model_validator(mode="after")
+    def check_time_or_flight(self):
+        has_times = bool(self.arrival_time and self.departure_time)
+        has_flights = bool(self.arrival_flight and self.departure_flight)
+        if not has_times and not has_flights:
+            raise ValueError(
+                "Provide either arrival_time + departure_time, "
+                "or arrival_flight + departure_flight"
+            )
+        return self
 
 
 # Response models

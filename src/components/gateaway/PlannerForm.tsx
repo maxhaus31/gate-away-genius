@@ -7,46 +7,50 @@ interface Props {
   departure: string;
   airport: AirportCode;
   passport: PassportRegion;
-  flightNumber?: string;
+  arrivalFlight?: string;
+  departureFlight?: string;
   transportMode?: "transit" | "driving";
-  onChange: (patch: Partial<{ arrival: string; departure: string; airport: AirportCode; passport: PassportRegion; flightNumber?: string; transportMode?: "transit" | "driving" }>) => void;
+  onChange: (patch: Partial<{
+    arrival: string;
+    departure: string;
+    airport: AirportCode;
+    passport: PassportRegion;
+    arrivalFlight: string;
+    departureFlight: string;
+    transportMode: "transit" | "driving";
+  }>) => void;
   onSubmit: () => void;
 }
 
-export const PlannerForm = ({ arrival, departure, airport, passport, flightNumber, transportMode = "transit", onChange, onSubmit }: Props) => {
-  const [lookupLoading, setLookupLoading] = useState(false);
+export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlight, departureFlight, transportMode = "transit", onChange, onSubmit }: Props) => {
+  const [arrivalLookupLoading, setArrivalLookupLoading] = useState(false);
+  const [departureLookupLoading, setDepartureLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
-  const handleFlightLookup = async () => {
-    if (!flightNumber || !airport) {
-      setLookupError("Please enter a flight number and select an airport");
-      return;
-    }
-
-    setLookupLoading(true);
+  const lookupFlight = async (flightNumber: string, direction: "arrival" | "departure") => {
+    const setLoading = direction === "arrival" ? setArrivalLookupLoading : setDepartureLookupLoading;
+    setLoading(true);
     setLookupError(null);
-
     try {
       const response = await fetch(
-        `/api/flights/lookup?flight_number=${encodeURIComponent(flightNumber)}&airport_code=${encodeURIComponent(airport)}`
+        `/api/flights/lookup?flight_number=${encodeURIComponent(flightNumber)}`
       );
-
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.detail || "Flight not found");
       }
-
       const data = await response.json();
-      
-      // Auto-populate arrival time if found
-      if (data.arrival) {
-        onChange({ arrival: data.arrival });
-        setLookupError(null);
+      const timeField = direction === "arrival" ? "scheduled_arrival" : "scheduled_departure";
+      const time = data[timeField];
+      if (time) {
+        // Extract HH:MM from ISO string for the time picker
+        const hhmm = time.slice(11, 16);
+        onChange(direction === "arrival" ? { arrival: hhmm } : { departure: hhmm });
       }
     } catch (err) {
       setLookupError(err instanceof Error ? err.message : "Failed to look up flight");
     } finally {
-      setLookupLoading(false);
+      setLoading(false);
     }
   };
 
@@ -103,23 +107,46 @@ export const PlannerForm = ({ arrival, departure, airport, passport, flightNumbe
             ))}
           </select>
         </Field>
-        <Field label="Flight number (optional)">
+        <Field label="Arrival flight (optional)">
           <div className="flex gap-2 items-center">
             <input
               type="text"
-              placeholder="e.g., BA 284"
-              value={flightNumber || ""}
-              onChange={(e) => onChange({ flightNumber: e.target.value })}
+              placeholder="e.g., KL1234"
+              value={arrivalFlight || ""}
+              onChange={(e) => onChange({ arrivalFlight: e.target.value })}
               className="flex-1 bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
             />
-            <button
-              type="button"
-              onClick={handleFlightLookup}
-              disabled={!flightNumber || lookupLoading}
-              className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-            >
-              {lookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look up"}
-            </button>
+            {arrivalFlight && (
+              <button
+                type="button"
+                onClick={() => lookupFlight(arrivalFlight, "arrival")}
+                disabled={arrivalLookupLoading}
+                className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {arrivalLookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look up"}
+              </button>
+            )}
+          </div>
+        </Field>
+        <Field label="Departure flight (optional)">
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              placeholder="e.g., TP1835"
+              value={departureFlight || ""}
+              onChange={(e) => onChange({ departureFlight: e.target.value })}
+              className="flex-1 bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
+            />
+            {departureFlight && (
+              <button
+                type="button"
+                onClick={() => lookupFlight(departureFlight, "departure")}
+                disabled={departureLookupLoading}
+                className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {departureLookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look up"}
+              </button>
+            )}
           </div>
           {lookupError && (
             <div className="flex gap-2 items-start mt-2 text-sm text-destructive">

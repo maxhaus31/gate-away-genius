@@ -10,12 +10,19 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
  * Request types (matches backend models.py)
  */
 export interface PlannerInput {
-  arrival_time: string; // ISO format: "2024-05-01T10:00:00"
-  departure_time: string; // ISO format: "2024-05-01T14:00:00"
+  // Option A: manual timestamps
+  arrival_time?: string;   // ISO format: "2024-05-01T10:00:00"
+  departure_time?: string; // ISO format: "2024-05-01T14:00:00"
+
+  // Option B: flight numbers (backend resolves via Schiphol)
+  arrival_flight?: string;   // e.g. "KL1234"
+  departure_flight?: string; // e.g. "KL5678"
+  flight_date?: string;      // "YYYY-MM-DD"; defaults to today
+
+  // Always required
   airport_code: string; // "LIS", "AMS", "SIN"
   passport_region: string; // "EU", "US", "OTHER"
-  flight_number?: string; // Optional flight number for lookup
-  transport_mode?: "transit" | "driving"; // "transit" for public transport, "driving" for car/taxi
+  transport_mode?: "transit" | "driving";
 }
 
 /**
@@ -62,6 +69,20 @@ export interface Activity {
   duration_minutes: number;
 }
 
+export interface AirportInfo {
+  code: string;
+  city: string;
+  name: string;
+  country: string;
+  flag: string;
+  transportToCityMin: number;
+  transportLabel: string;
+  reentrySecurityMin: number;
+  walkToGateMin: number;
+  checkinCutoffMin: number;
+  vibe: string;
+}
+
 export interface PlanResponse {
   verdict: "safe" | "tight" | "stay";
   verdict_description: string;
@@ -72,6 +93,9 @@ export interface PlanResponse {
   city_time_minutes: number;
   total_minutes: number;
   buffer_minutes: number;
+  usable_minutes: number;
+  airport: AirportInfo;
+  immigration_buffer: number;
   suggestions: Array<{
     emoji: string;
     title: string;
