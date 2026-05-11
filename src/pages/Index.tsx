@@ -7,19 +7,14 @@ import { TimelineFlowchart } from "@/components/gateaway/TimelineFlowchart";
 import { PlaceOptions } from "@/components/gateaway/PlaceOptions";
 import { Suggestions } from "@/components/gateaway/Suggestions";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
-import { AirportCode, PassportRegion, formatDuration } from "@/lib/gateaway-data";
+import { PlanResult as GDPlanResult, AirportCode, PassportRegion } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
 
-// Adapter type for frontend components (matches backend PlanResponse + local fields)
-type PlanResult = PlanResponse & {
-  totalMinutes: number;
-  bufferMinutes: number;
-  cityTimeMinutes: number;
-  bufferBreakdown: { label: string; minutes: number }[];
-  usableMinutes: number;
-  headline: string;
-  message: string;
-};
+// Extends gateaway-data.PlanResult with backend-only fields so components stay typed
+type PlanResult = GDPlanResult & Pick<PlanResponse,
+  "verdict_description" | "timeline" | "activity_itinerary" |
+  "available_time_minutes" | "place_options" | "safety_buffer_breakdown"
+>;
 
 // Helper: Convert "HH:MM" time to ISO date string for today
 function timeToISO(time: string): string {
@@ -30,9 +25,10 @@ function timeToISO(time: string): string {
 const Index = () => {
   const [arrival, setArrival] = useState("10:30");
   const [departure, setDeparture] = useState("16:15");
-  const [airport, setAirport] = useState<AirportCode>("LIS"); // Changed default to LIS for MVP
+  const [airport, setAirport] = useState<AirportCode>("LIS");
   const [passport, setPassport] = useState<PassportRegion>("EU");
-  const [flightNumber, setFlightNumber] = useState<string>("");
+  const [arrivalFlight, setArrivalFlight] = useState<string>("");
+  const [departureFlight, setDepartureFlight] = useState<string>("");
   const [transportMode, setTransportMode] = useState<"transit" | "driving">("transit");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,21 +50,20 @@ const Index = () => {
           departure_time: timeToISO(departure),
           airport_code: airport,
           passport_region: passport,
-          flight_number: flightNumber || undefined,
+          arrival_flight: arrivalFlight || undefined,
+          departure_flight: departureFlight || undefined,
           transport_mode: transportMode,
         });
 
-        // Adapt response to match frontend component expectations
         const adaptedPlan: PlanResult = {
           ...response,
+          airport: { ...response.airport, code: response.airport.code as AirportCode },
           totalMinutes: response.total_minutes,
           bufferMinutes: response.buffer_minutes,
           cityTimeMinutes: response.city_time_minutes,
-          bufferBreakdown: response.buffer_breakdown.map((b) => ({
-            label: b.label,
-            minutes: b.minutes,
-          })),
+          bufferBreakdown: response.buffer_breakdown,
           usableMinutes: response.usable_minutes,
+          immigrationBuffer: response.immigration_buffer,
           headline: response.headline,
           message: response.verdict_description,
         };
@@ -108,16 +103,17 @@ const Index = () => {
           departure={departure}
           airport={airport}
           passport={passport}
-          flightNumber={flightNumber}
+          arrivalFlight={arrivalFlight}
+          departureFlight={departureFlight}
           transportMode={transportMode}
           onChange={(p) => {
             if (p.arrival !== undefined) setArrival(p.arrival);
             if (p.departure !== undefined) setDeparture(p.departure);
             if (p.airport !== undefined) setAirport(p.airport as AirportCode);
             if (p.passport !== undefined) setPassport(p.passport as PassportRegion);
-            if (p.flightNumber !== undefined) setFlightNumber(p.flightNumber);
+            if (p.arrivalFlight !== undefined) setArrivalFlight(p.arrivalFlight);
+            if (p.departureFlight !== undefined) setDepartureFlight(p.departureFlight);
             if (p.transportMode !== undefined) setTransportMode(p.transportMode);
-            setSubmitted(true);
           }}
           onSubmit={() => setSubmitted(true)}
         />

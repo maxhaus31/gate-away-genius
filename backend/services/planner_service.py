@@ -11,6 +11,7 @@ from models import PlannerInput, PlannerOutput, TimelineSegment, Suggestion, Air
 from services.gemini_ai import GeminiActivityService
 from services.google_maps import GoogleMapsService
 from services.places_service import PlacesService
+from services.schiphol_api import SchipholService
 from services.unsplash import UnsplashService
 
 # Security limit: Max Google Maps API calls per plan generation
@@ -286,9 +287,24 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     airport_config = AIRPORTS_CONFIG.get(input_data.airport_code)
     if not airport_config:
         raise ValueError(f"Airport {input_data.airport_code} not supported")
-    
+
+    # Resolve times — use provided timestamps or look up via Schiphol
+    arrival_time = input_data.arrival_time
+    departure_time = input_data.departure_time
+
+    if not arrival_time and input_data.arrival_flight:
+        flight = await SchipholService.get_flight(input_data.arrival_flight, input_data.flight_date)
+        arrival_time = flight.get("scheduled_arrival")
+
+    if not departure_time and input_data.departure_flight:
+        flight = await SchipholService.get_flight(input_data.departure_flight, input_data.flight_date)
+        departure_time = flight.get("scheduled_departure")
+
+    if not arrival_time or not departure_time:
+        raise ValueError("Could not resolve flight times — check flight numbers and date")
+
     # Calculate total available time
-    total_minutes = calculate_minutes_between(input_data.arrival_time, input_data.departure_time)
+    total_minutes = calculate_minutes_between(arrival_time, departure_time)
     if total_minutes <= 0:
         raise ValueError("Departure time must be after arrival time")
     
