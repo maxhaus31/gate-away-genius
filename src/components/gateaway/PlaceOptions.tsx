@@ -1,12 +1,13 @@
 import { PlaceOption } from "@/api/client";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, CheckCircle2 } from "lucide-react";
 
 interface Props {
   places: PlaceOption[];
+  selectedIds: Set<string>;
   onPlaceSelect: (place: PlaceOption) => void;
 }
 
-export const PlaceOptions = ({ places, onPlaceSelect }: Props) => {
+export const PlaceOptions = ({ places, selectedIds, onPlaceSelect }: Props) => {
   if (!places || places.length === 0) {
     return null;
   }
@@ -21,11 +22,18 @@ export const PlaceOptions = ({ places, onPlaceSelect }: Props) => {
       </p>
       
       <div className="grid gap-3">
-        {places.map((place) => (
+        {places.map((place) => {
+          const isAdded = selectedIds.has(place.place_id);
+          return (
           <button
             key={place.place_id}
-            onClick={() => onPlaceSelect(place)}
-            className="group relative overflow-hidden rounded-xl border border-border bg-card text-left transition-all hover:border-primary hover:shadow-md hover:bg-secondary/20 cursor-pointer"
+            onClick={() => !isAdded && onPlaceSelect(place)}
+            disabled={isAdded}
+            className={`group relative overflow-hidden rounded-xl border bg-card text-left transition-all ${
+              isAdded
+                ? "border-green-500 opacity-75 cursor-default"
+                : "border-border hover:border-primary hover:shadow-md hover:bg-secondary/20 cursor-pointer"
+            }`}
           >
             {/* Photo if available */}
             {place.photo_url && (
@@ -58,9 +66,16 @@ export const PlaceOptions = ({ places, onPlaceSelect }: Props) => {
             <div className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {place.name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {place.name}
+                    </h3>
+                    {isAdded && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-green-600">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Added
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     {place.description}
                   </p>
@@ -87,7 +102,7 @@ export const PlaceOptions = ({ places, onPlaceSelect }: Props) => {
               </div>
             </div>
           </button>
-        ))}
+        ); })}
       </div>
       
       {/* Unsplash attribution footer (required by API guidelines) */}
