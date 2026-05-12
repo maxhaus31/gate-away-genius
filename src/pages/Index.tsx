@@ -17,19 +17,17 @@ type PlanResult = GDPlanResult & Pick<PlanResponse,
   "available_time_minutes" | "place_options" | "safety_buffer_breakdown"
 >;
 
-// Helper: Convert "HH:MM" time to ISO date string for today
-function timeToISO(time: string): string {
-  const today = new Date().toISOString().split("T")[0];
-  return `${today}T${time}:00`;
-}
-
 const Index = () => {
+  // arrival/departure (HH:MM) are kept for the time-picker UI and Timeline display only —
+  // they are NOT sent to the backend.  The backend derives times from Schiphol using the
+  // flight numbers below.  Lovable redesign: replace with inbound_flight / outbound_flight inputs.
   const [arrival, setArrival] = useState("10:30");
   const [departure, setDeparture] = useState("16:15");
   const [airport, setAirport] = useState<AirportCode>("LIS");
   const [passport, setPassport] = useState<PassportRegion>("EU");
-  const [arrivalFlight, setArrivalFlight] = useState<string>("");
-  const [departureFlight, setDepartureFlight] = useState<string>("");
+  // Renamed from arrivalFlight / departureFlight to match the backend contract
+  const [inboundFlight, setInboundFlight] = useState<string>("");
+  const [outboundFlight, setOutboundFlight] = useState<string>("");
   const [transportMode, setTransportMode] = useState<"transit" | "driving">("transit");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,14 +43,18 @@ const Index = () => {
       setError(null);
       setPlan(null);
 
+      if (!inboundFlight || !outboundFlight) {
+        setError("Please enter both inbound and outbound flight numbers.");
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await submitPlannerForm({
-          arrival_time: timeToISO(arrival),
-          departure_time: timeToISO(departure),
+          inbound_flight: inboundFlight,
+          outbound_flight: outboundFlight,
           airport_code: airport,
           passport_region: passport,
-          arrival_flight: arrivalFlight || undefined,
-          departure_flight: departureFlight || undefined,
           transport_mode: transportMode,
         });
 
@@ -80,7 +82,7 @@ const Index = () => {
     };
 
     fetchPlan();
-  }, [submitted, arrival, departure, airport, passport, transportMode]);
+  }, [submitted, inboundFlight, outboundFlight, airport, passport, transportMode]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
@@ -104,16 +106,18 @@ const Index = () => {
           departure={departure}
           airport={airport}
           passport={passport}
-          arrivalFlight={arrivalFlight}
-          departureFlight={departureFlight}
+          arrivalFlight={inboundFlight}
+          departureFlight={outboundFlight}
           transportMode={transportMode}
           onChange={(p) => {
             if (p.arrival !== undefined) setArrival(p.arrival);
             if (p.departure !== undefined) setDeparture(p.departure);
             if (p.airport !== undefined) setAirport(p.airport as AirportCode);
             if (p.passport !== undefined) setPassport(p.passport as PassportRegion);
-            if (p.arrivalFlight !== undefined) setArrivalFlight(p.arrivalFlight);
-            if (p.departureFlight !== undefined) setDepartureFlight(p.departureFlight);
+            // PlannerForm still uses arrivalFlight/departureFlight internally;
+            // map to the new inbound/outbound names for the API call
+            if (p.arrivalFlight !== undefined) setInboundFlight(p.arrivalFlight);
+            if (p.departureFlight !== undefined) setOutboundFlight(p.departureFlight);
             if (p.transportMode !== undefined) setTransportMode(p.transportMode);
           }}
           onSubmit={() => setSubmitted(true)}
