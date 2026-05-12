@@ -12,18 +12,24 @@ from config import SCHIPHOL_APP_ID, SCHIPHOL_APP_KEY
 # ── Mock data ──────────────────────────────────────────────────────────────────
 # Returned whenever the API is unavailable, credentials are missing,
 # or the requested flight is not found. Keeps the demo stable.
+# Dates are generated at call-time so they always match today — a hardcoded date
+# causes cross-day mismatches when one flight hits the API and the other falls back.
 
-MOCK_FLIGHT_DATA: Dict[str, Any] = {
-    "flight_name": "KL1234",
-    "scheduled_arrival": "2026-05-10T10:30:00+02:00",
-    "scheduled_departure": "2026-05-10T14:00:00+02:00",
-    "terminal": "D",
-    "pier": "D",
-    "gate": "D7",
-    "delay_minutes": 0,
-    "status": "scheduled",
-    "is_mock": True,
-}
+def _mock_flight_data() -> Dict[str, Any]:
+    today = datetime.now().strftime("%Y-%m-%d")
+    return {
+        "flight_number":       "MOCK",
+        "date":                today,
+        "scheduled_arrival":   f"{today}T10:30:00+02:00",
+        "scheduled_departure": f"{today}T14:00:00+02:00",
+        "actual_arrival":      None,   # not available for scheduled/future flights
+        "terminal":            "D",
+        "pier":                "D",
+        "gate":                "D7",
+        "delay_minutes":       0,
+        "status":              "scheduled",
+        "is_mock":             True,
+    }
 
 MOCK_QUEUE_DATA: Dict[str, Any] = {
     "terminal": "D",
@@ -72,16 +78,21 @@ class SchipholService:
         states      = raw.get("publicFlightState", {}).get("flightStates", [])
         status      = states[0].lower() if states else "scheduled"
 
+        direction = raw.get("flightDirection", "")
+        date      = scheduled[:10] if scheduled else ""  # "YYYY-MM-DD"
+
         return {
-            "flight_name":          raw.get("flightName", ""),
-            "scheduled_arrival":    scheduled,
-            "scheduled_departure":  scheduled,   # same field; caller decides direction
-            "terminal":             str(raw.get("terminal", "")),
-            "pier":                 raw.get("pier", ""),
-            "gate":                 raw.get("gate", ""),
-            "delay_minutes":        SchipholService._delay_minutes(scheduled, actual_land),
-            "status":               status,
-            "is_mock":              False,
+            "flight_number":       raw.get("flightName", ""),
+            "date":                date,
+            "scheduled_arrival":   scheduled if direction == "A" else "",
+            "scheduled_departure": scheduled if direction == "D" else "",
+            "actual_arrival":      actual_land if direction == "A" else None,
+            "terminal":            str(raw.get("terminal", "")),
+            "pier":                raw.get("pier", ""),
+            "gate":                raw.get("gate", ""),
+            "delay_minutes":       SchipholService._delay_minutes(scheduled, actual_land),
+            "status":              status,
+            "is_mock":             False,
         }
 
     @staticmethod
@@ -103,8 +114,8 @@ class SchipholService:
             Parsed flight dict, or MOCK_FLIGHT_DATA if unavailable.
         """
         if not SchipholService._is_configured():
-            print("⚠️  Schiphol credentials not configured — using mock flight data")
-            return MOCK_FLIGHT_DATA
+            print("WARNING:  Schiphol credentials not configured — using mock flight data")
+            return _mock_flight_data()
 
         schedule_date = date or datetime.now().strftime("%Y-%m-%d")
 
@@ -123,18 +134,18 @@ class SchipholService:
                 flights = response.json().get("flights", [])
 
         except httpx.TimeoutException:
-            print(f"⏱️  Schiphol API timeout for {flight_name} — using mock data")
-            return MOCK_FLIGHT_DATA
+            print(f"TIMEOUT:  Schiphol API timeout for {flight_name} — using mock data")
+            return _mock_flight_data()
         except httpx.HTTPStatusError as e:
-            print(f"❌  Schiphol API {e.response.status_code} for {flight_name} — using mock data")
-            return MOCK_FLIGHT_DATA
+            print(f"ERROR:  Schiphol API {e.response.status_code} for {flight_name} — using mock data")
+            return _mock_flight_data()
         except Exception as e:
-            print(f"❌  Schiphol API error: {e} — using mock data")
-            return MOCK_FLIGHT_DATA
+            print(f"ERROR:  Schiphol API error: {e} — using mock data")
+            return _mock_flight_data()
 
         if not flights:
-            print(f"⚠️  Flight {flight_name} not found on {schedule_date} — using mock data")
-            return MOCK_FLIGHT_DATA
+            print(f"WARNING:  Flight {flight_name} not found on {schedule_date} — using mock data")
+            return _mock_flight_data()
 
         return SchipholService._parse_flight(flights[0])
 
@@ -151,7 +162,7 @@ class SchipholService:
             Dict with terminal and queue_minutes, or MOCK_QUEUE_DATA if unavailable.
         """
         if not SchipholService._is_configured():
-            print("⚠️  Schiphol credentials not configured — using mock queue data")
+            print("WARNING:  Schiphol credentials not configured — using mock queue data")
             return MOCK_QUEUE_DATA
 
         try:
@@ -165,13 +176,13 @@ class SchipholService:
                 queues = response.json().get("queues", [])
 
         except httpx.TimeoutException:
-            print("⏱️  Schiphol queue API timeout — using mock data")
+            print("TIMEOUT:  Schiphol queue API timeout — using mock data")
             return MOCK_QUEUE_DATA
         except httpx.HTTPStatusError as e:
-            print(f"❌  Schiphol queue API {e.response.status_code} — using mock data")
+            print(f"ERROR:  Schiphol queue API {e.response.status_code} — using mock data")
             return MOCK_QUEUE_DATA
         except Exception as e:
-            print(f"❌  Schiphol queue API error: {e} — using mock data")
+            print(f"ERROR:  Schiphol queue API error: {e} — using mock data")
             return MOCK_QUEUE_DATA
 
         if not queues:

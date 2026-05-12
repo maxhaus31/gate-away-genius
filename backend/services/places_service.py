@@ -45,14 +45,14 @@ class PlacesService:
         """
         city_center = PlacesService.CITY_CENTERS.get(airport_code)
         if not city_center:
-            print(f"⚠️ City center for {airport_code} not found")
+            print(f"WARNING: City center for {airport_code} not found")
             return []
         
         # Calculate radius based on available time
         # Approximate: 30 min available = 5km radius, 60 min = 10km, etc.
         radius_m = min(int((available_minutes / 30) * 5000), 15000)  # Cap at 15km
         
-        print(f"🔍 Searching for attractions within {radius_m}m radius")
+        print(f"INFO: Searching for attractions within {radius_m}m radius")
         
         # Search for attractions
         all_places = []
@@ -79,7 +79,7 @@ class PlacesService:
             reverse=True
         )[:max_places]
         
-        print(f"📍 Found {len(sorted_places)} top attractions")
+        print(f"INFO: Found {len(sorted_places)} top attractions")
         
         # Get all descriptions in a single Gemini call
         gemini_service = GeminiActivityService()

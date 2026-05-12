@@ -41,7 +41,7 @@ class GoogleMapsService:
             {"distance_m": 5000, "duration_min": 25} or None if API fails
         """
         if not GOOGLE_MAPS_API_KEY:
-            print("⚠️ GOOGLE_MAPS_API_KEY not configured")
+            print("WARNING: GOOGLE_MAPS_API_KEY not configured")
             return None
         
         try:
@@ -85,7 +85,7 @@ class GoogleMapsService:
                 
                 # Check for valid response
                 if not data.get("routes") or len(data["routes"]) == 0:
-                    print(f"⚠️ Google Maps Routes API: No routes found")
+                    print(f"WARNING: Google Maps Routes API: No routes found")
                     return None
                 
                 route = data["routes"][0]
@@ -109,7 +109,7 @@ class GoogleMapsService:
                 }
                 
         except Exception as e:
-            print(f"❌ Google Maps Routes API error: {e}")
+            print(f"ERROR: Google Maps Routes API error: {e}")
             return None
     
     @staticmethod
@@ -131,7 +131,7 @@ class GoogleMapsService:
         """
         airport_coords = GoogleMapsService.AIRPORT_COORDS.get(airport_code)
         if not airport_coords:
-            print(f"⚠️ Airport {airport_code} coordinates not found")
+            print(f"WARNING: Airport {airport_code} coordinates not found")
             return None
         
         # Get duration there
@@ -167,7 +167,7 @@ class GoogleMapsService:
             List of places with {name, rating, user_ratings_total, types, coordinates, address}
         """
         if not GOOGLE_MAPS_API_KEY:
-            print("⚠️ GOOGLE_MAPS_API_KEY not configured")
+            print("WARNING: GOOGLE_MAPS_API_KEY not configured")
             return None
         
         try:
@@ -190,7 +190,7 @@ class GoogleMapsService:
                 data = response.json()
                 
                 if data.get("status") != "OK":
-                    print(f"⚠️ Places API: {data.get('status')}")
+                    print(f"WARNING: Places API: {data.get('status')}")
                     return None
                 
                 places = []
@@ -220,5 +220,5 @@ class GoogleMapsService:
                 return places
                 
         except Exception as e:
-            print(f"❌ Places API error: {e}")
+            print(f"ERROR: Places API error: {e}")
             return None

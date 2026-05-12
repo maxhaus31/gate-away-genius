@@ -33,3 +33,6 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .coverage
+
+# Backend cache — generated at runtime, not source-controlled
+backend/cache/itineraries.json

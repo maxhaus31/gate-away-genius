@@ -26,7 +26,7 @@ def _round_to_15(iso_str: str) -> str:
 def make_key(
     airport_code: str,
     passport_region: str,
-    transport_mode: str,
+    transport_mode: str,   # ACTIVITY PLANNING — not user-supplied in Step 1; revisit in Step 3
     arrival_time: str,
     departure_time: str,
 ) -> str:

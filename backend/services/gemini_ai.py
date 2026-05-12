@@ -64,7 +64,7 @@ def _call_gemini_with_fallback(prompt: str) -> str:
     try:
         result = _call_gemini(prompt, PRIMARY_MODEL)
     except Exception as e:
-        print(f"⚠️ Primary model failed ({e}), trying fallback")
+        print(f"WARNING: Primary model failed ({e}), trying fallback")
         result = _call_gemini(prompt, FALLBACK_MODEL)
     _cache_set(prompt, result)
     return result
@@ -121,11 +121,11 @@ Format: Return ONLY valid JSON array, nothing else."""
                 try:
                     validated.append(Activity(**activity).model_dump())
                 except Exception as e:
-                    print(f"⚠️ Activity validation failed: {e}")
+                    print(f"WARNING: Activity validation failed: {e}")
             return validated[:3]
 
         except Exception as e:
-            print(f"⚠️ Gemini activity generation failed: {e}")
+            print(f"WARNING: Gemini activity generation failed: {e}")
             return self._fallback_activities(airport_city)
 
     def generate_verdict_copy(
@@ -149,7 +149,7 @@ Format: Return ONLY valid JSON array, nothing else."""
         try:
             return _call_gemini_with_fallback(prompt_text)[:100]
         except Exception as e:
-            print(f"⚠️ Gemini verdict generation failed: {e}")
+            print(f"WARNING: Gemini verdict generation failed: {e}")
             return self._fallback_copy(verdict, available_minutes, airport_city)
 
     def generate_place_descriptions_batch(
@@ -190,7 +190,7 @@ Format: Return ONLY valid JSON array, nothing else."""
                 text.split("```")[1].split("```")[0].strip()
             return json.loads(text)
         except Exception as e:
-            print(f"⚠️ Batch description generation failed: {e}")
+            print(f"WARNING: Batch description generation failed: {e}")
             return {
                 p["name"]: f"{p['name']} — {p['rating']}/5 ({p['user_ratings_total']} reviews)"
                 for p in places
@@ -210,7 +210,7 @@ Format: Return ONLY valid JSON array, nothing else."""
 
     def _fallback_copy(self, verdict: str, minutes: int, city: str) -> str:
         if verdict == "safe":
-            return f"You've got time! Quick {city} adventure incoming ✈️"
+            return f"You've got time! Quick {city} adventure incoming INFO:"
         elif verdict == "tight":
             return f"Tight timeline but doable—move fast! ⏰"
         else:

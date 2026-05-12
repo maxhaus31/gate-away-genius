@@ -37,7 +37,7 @@ class UnsplashService:
             }
         """
         if not UNSPLASH_ACCESS_KEY:
-            print("⚠️ UNSPLASH_ACCESS_KEY not configured")
+            print("WARNING: UNSPLASH_ACCESS_KEY not configured")
             return []
         
         try:
@@ -79,7 +79,7 @@ class UnsplashService:
                 return results
                 
         except Exception as e:
-            print(f"❌ Unsplash API error: {e}")
+            print(f"ERROR: Unsplash API error: {e}")
             return []
     
     @staticmethod
@@ -106,5 +106,5 @@ class UnsplashService:
                 response.raise_for_status()
                 return True
         except Exception as e:
-            print(f"⚠️ Failed to trigger download event: {e}")
+            print(f"WARNING: Failed to trigger download event: {e}")
             return False
