@@ -76,10 +76,11 @@ class SchipholService:
         states      = raw.get("publicFlightState", {}).get("flightStates", [])
         status      = states[0].lower() if states else "scheduled"
 
+        direction = raw.get("flightDirection", "")
         return {
             "flight_name":          raw.get("flightName", ""),
-            "scheduled_arrival":    scheduled,
-            "scheduled_departure":  scheduled,   # same field; caller decides direction
+            "scheduled_arrival":    scheduled if direction == "A" else "",
+            "scheduled_departure":  scheduled if direction == "D" else "",
             "terminal":             str(raw.get("terminal", "")),
             "pier":                 raw.get("pier", ""),
             "gate":                 raw.get("gate", ""),

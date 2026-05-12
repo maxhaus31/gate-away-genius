@@ -596,7 +596,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     itinerary_steps.append(
         ActivityStep(
             type="airport",
-            emoji="INFO:",
+            emoji="✈️",
             title=f"{airport_config['name']} (Arrive)",
             duration_minutes=25 + immigration_buffer,
         )
