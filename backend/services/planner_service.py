@@ -278,28 +278,25 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     Generate layover plan based on flight info and passport
     
     Args:
-        input_data: PlannerInput with arrival/departure times, airport, passport, optional flight number
-    
+        input_data: PlannerInput with inbound/outbound flight numbers, airport, passport
+
     Returns:
         PlannerOutput with verdict, timeline, suggestions, etc.
     """
-    
+
     # Support all airports now
     airport_config = AIRPORTS_CONFIG.get(input_data.airport_code)
     if not airport_config:
         raise ValueError(f"Airport {input_data.airport_code} not supported")
 
-    # Resolve times — use provided timestamps or look up via Schiphol
-    arrival_time = input_data.arrival_time
-    departure_time = input_data.departure_time
+    # Resolve full ISO datetimes from Schiphol — flight_date is only used for the
+    # API query (defaults to today inside SchipholService); all downstream calculations
+    # use the complete datetime strings returned here, not just the time component.
+    inbound = await SchipholService.get_flight(input_data.inbound_flight, input_data.flight_date)
+    arrival_time = inbound.get("scheduled_arrival")
 
-    if not arrival_time and input_data.arrival_flight:
-        flight = await SchipholService.get_flight(input_data.arrival_flight, input_data.flight_date)
-        arrival_time = flight.get("scheduled_arrival")
-
-    if not departure_time and input_data.departure_flight:
-        flight = await SchipholService.get_flight(input_data.departure_flight, input_data.flight_date)
-        departure_time = flight.get("scheduled_departure")
+    outbound = await SchipholService.get_flight(input_data.outbound_flight, input_data.flight_date)
+    departure_time = outbound.get("scheduled_departure")
 
     if not arrival_time or not departure_time:
         raise ValueError("Could not resolve flight times — check flight numbers and date")

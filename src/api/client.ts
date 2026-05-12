@@ -10,19 +10,23 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
  * Request types (matches backend models.py)
  */
 export interface PlannerInput {
-  // Option A: manual timestamps
-  arrival_time?: string;   // ISO format: "2024-05-01T10:00:00"
-  departure_time?: string; // ISO format: "2024-05-01T14:00:00"
-
-  // Option B: flight numbers (backend resolves via Schiphol)
-  arrival_flight?: string;   // e.g. "KL1234"
-  departure_flight?: string; // e.g. "KL5678"
-  flight_date?: string;      // "YYYY-MM-DD"; defaults to today
+  // Flight numbers are the only time inputs — backend resolves datetimes via Schiphol
+  inbound_flight: string;   // arriving flight,  e.g. "KL1234"
+  outbound_flight: string;  // departing flight, e.g. "KL5678"
+  flight_date?: string;     // "YYYY-MM-DD"; forwarded to Schiphol query only, defaults to today
 
   // Always required
-  airport_code: string; // "LIS", "AMS", "SIN"
+  airport_code: string;    // "LIS", "AMS", "SIN"
   passport_region: string; // "EU", "US", "OTHER"
   transport_mode?: "transit" | "driving";
+}
+
+/**
+ * Response from POST /api/extract-flights
+ */
+export interface FlightExtractResponse {
+  inbound_flight: string | null;
+  outbound_flight: string | null;
 }
 
 /**
@@ -145,6 +149,37 @@ export async function submitPlannerForm(input: PlannerInput): Promise<PlanRespon
   }
 
   return (await response.json()) as PlanResponse;
+}
+
+/**
+ * Upload a boarding pass image or PDF and extract flight numbers.
+ * Backend tries regex first; falls back to Gemini Vision if needed.
+ *
+ * @param file - image (JPEG/PNG) or PDF boarding pass
+ * @returns inbound_flight and outbound_flight (either may be null)
+ * @throws Error if extraction fails
+ */
+export async function extractFlightsFromFile(file: File): Promise<FlightExtractResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/api/extract-flights`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorMessage = "Failed to extract flight numbers";
+    try {
+      const error = (await response.json()) as ApiError;
+      errorMessage = error.detail || errorMessage;
+    } catch {
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
+  }
+
+  return (await response.json()) as FlightExtractResponse;
 }
 
 /**
