@@ -7,9 +7,12 @@ import { TimelineFlowchart } from "@/components/gateaway/TimelineFlowchart";
 import { PlaceOptions } from "@/components/gateaway/PlaceOptions";
 import { MyPlan } from "@/components/gateaway/MyPlan";
 import { Suggestions } from "@/components/gateaway/Suggestions";
+import { RouteMap } from "@/components/gateaway/RouteMap";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Extends gateaway-data.PlanResult with backend-only fields so components stay typed
 type PlanResult = GDPlanResult & Pick<PlanResponse,
@@ -36,6 +39,8 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<PlaceOption[]>([]);
+  const [routeData, setRouteData] = useState<any>(null);
+  const [calculatingRoute, setCalculatingRoute] = useState(false);
 
   useEffect(() => {
     if (!submitted) return;
@@ -44,6 +49,8 @@ const Index = () => {
       setLoading(true);
       setError(null);
       setPlan(null);
+      setSelectedPlaces([]);
+      setRouteData(null);
 
       try {
         const response = await submitPlannerForm({
@@ -81,6 +88,47 @@ const Index = () => {
 
     fetchPlan();
   }, [submitted, arrival, departure, airport, passport, transportMode]);
+
+  // Calculate route when exactly 3 places are selected
+  useEffect(() => {
+    if (selectedPlaces.length !== 3 || !plan) return;
+
+    const calculateRoute = async () => {
+      setCalculatingRoute(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/calculate-route`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            airport_code: airport,
+            place_ids: selectedPlaces.map(p => p.place_id),
+            place_names: selectedPlaces.map(p => p.name),
+            place_coordinates: selectedPlaces.map(p => p.coordinates),
+            transport_mode: transportMode,
+            available_minutes: plan.cityTimeMinutes,
+            time_per_place: 45,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || "Failed to calculate route");
+        }
+
+        const data = await response.json();
+        setRouteData(data);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Route calculation failed";
+        console.error("Route error:", message);
+        // Don't show as main error, just warn
+        alert(`Route calculation warning: ${message}`);
+      } finally {
+        setCalculatingRoute(false);
+      }
+    };
+
+    calculateRoute();
+  }, [selectedPlaces, plan, airport, transportMode]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
@@ -164,7 +212,26 @@ const Index = () => {
                 }
                 setSelectedPlaces((prev) => [...prev, place]);
               }}
+              onPlaceDeselect={(placeId) => {
+                setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== placeId));
+                setRouteData(null);
+              }}
             />
+          )}
+
+          {/* Route Map - appears when 3 places are selected */}
+          {routeData && selectedPlaces.length === 3 && (
+            <div>
+              {calculatingRoute && (
+                <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 flex items-center justify-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-muted-foreground">Calculating route...</span>
+                </div>
+              )}
+              {!calculatingRoute && (
+                <RouteMap routeData={routeData} airportCode={airport} />
+              )}
+            </div>
           )}
 
           {/* My Plan - appears once user has added at least one place */}

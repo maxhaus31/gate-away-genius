@@ -96,6 +96,33 @@ class BufferBreakdown(BaseModel):
     minutes: int
 
 
+class RouteLeg(BaseModel):
+    """Single leg of a route (from one place to next)"""
+    from_place: str  # Place name or "Airport"
+    to_place: str    # Destination place name or "Airport"
+    distance_meters: int
+    duration_minutes: int
+
+
+class RouteResponse(BaseModel):
+    """Response from route calculation endpoint"""
+    total_distance_meters: int
+    total_duration_minutes: int
+    legs: List[RouteLeg]  # Individual legs of the journey
+    polyline: Optional[str] = None  # Encoded polyline for map display
+    waypoints: List[dict]  # List of waypoint coordinates
+
+
+class ItineraryItem(BaseModel):
+    """Single item in the detailed itinerary"""
+    sequence: int
+    activity: str  # "Travel to", "Visit", "Travel back"
+    place_name: str
+    duration_minutes: int
+    cumulative_minutes: int
+    coordinates: Optional[str] = None
+
+
 class PlannerOutput(BaseModel):
     """Complete layover plan response"""
     # Verdict and messaging

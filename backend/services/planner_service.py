@@ -198,25 +198,25 @@ async def get_place_options_with_photos(airport_code: str, city_time_minutes: in
     """
     place_options_data = {
         "LIS": [
-            {"name": "Praça do Comércio", "description": "Historic riverside plaza with stunning views.", "search_query": "lisbon plaza"},
-            {"name": "Pastéis de Nata at Manteigaria", "description": "Famous pastry shop - don't miss the original custard tart.", "search_query": "portuguese pastry"},
-            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint"},
-            {"name": "Tram 28", "description": "Iconic yellow tram through the historic Alfama district.", "search_query": "lisbon tram"},
-            {"name": "Café Majestic", "description": "Historic café with Belle Époque elegance and great coffee.", "search_query": "portuguese cafe"},
+            {"name": "Praça do Comércio", "description": "Historic riverside plaza with stunning views.", "search_query": "lisbon plaza", "coordinates": "38.7072,-9.1370"},
+            {"name": "Pastéis de Nata at Manteigaria", "description": "Famous pastry shop - don't miss the original custard tart.", "search_query": "portuguese pastry", "coordinates": "38.7076,-9.1359"},
+            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint", "coordinates": "38.7063,-9.1430"},
+            {"name": "Tram 28", "description": "Iconic yellow tram through the historic Alfama district.", "search_query": "lisbon tram", "coordinates": "38.7126,-9.1310"},
+            {"name": "Café Majestic", "description": "Historic café with Belle Époque elegance and great coffee.", "search_query": "portuguese cafe", "coordinates": "38.7095,-9.1420"},
         ],
         "AMS": [
-            {"name": "Amsterdam Canals", "description": "UNESCO-listed canal ring - quintessential Amsterdam.", "search_query": "amsterdam canal"},
-            {"name": "Rijksmuseum", "description": "World-class art museum - home to masterpieces.", "search_query": "museum art"},
-            {"name": "Jordaan District", "description": "Charming neighborhood with galleries, cafés, and antique shops.", "search_query": "amsterdam neighborhood"},
-            {"name": "Anne Frank House", "description": "Moving historical museum - book ahead online.", "search_query": "amsterdam history"},
-            {"name": "Bitterballen & Brown Café", "description": "Traditional Dutch snack in a cozy local pub.", "search_query": "dutch food"},
+            {"name": "Amsterdam Canals", "description": "UNESCO-listed canal ring - quintessential Amsterdam.", "search_query": "amsterdam canal", "coordinates": "52.3700,4.8952"},
+            {"name": "Rijksmuseum", "description": "World-class art museum - home to masterpieces.", "search_query": "museum art", "coordinates": "52.3601,4.8852"},
+            {"name": "Jordaan District", "description": "Charming neighborhood with galleries, cafés, and antique shops.", "search_query": "amsterdam neighborhood", "coordinates": "52.3750,4.8770"},
+            {"name": "Anne Frank House", "description": "Moving historical museum - book ahead online.", "search_query": "amsterdam history", "coordinates": "52.3752,4.8838"},
+            {"name": "Bitterballen & Brown Café", "description": "Traditional Dutch snack in a cozy local pub.", "search_query": "dutch food", "coordinates": "52.3689,4.8981"},
         ],
         "SIN": [
-            {"name": "Gardens by the Bay", "description": "Futuristic supertrees and enchanting light show.", "search_query": "singapore gardens"},
-            {"name": "Jewel Changi - Waterfall", "description": "World's tallest indoor waterfall - don't miss it!", "search_query": "waterfall"},
-            {"name": "Hawker Chan - Chicken Rice", "description": "Michelin-starred street food - legend in a stall.", "search_query": "singapore food"},
-            {"name": "Marina Bay Sands Observation Deck", "description": "57th floor views over the entire skyline.", "search_query": "singapore skyline"},
-            {"name": "Orchard Road Shopping", "description": "Luxury and local brands on Singapore's main drag.", "search_query": "shopping"},
+            {"name": "Gardens by the Bay", "description": "Futuristic supertrees and enchanting light show.", "search_query": "singapore gardens", "coordinates": "1.2816,103.8636"},
+            {"name": "Jewel Changi - Waterfall", "description": "World's tallest indoor waterfall - don't miss it!", "search_query": "waterfall", "coordinates": "1.3581,103.9868"},
+            {"name": "Hawker Chan - Chicken Rice", "description": "Michelin-starred street food - legend in a stall.", "search_query": "singapore food", "coordinates": "1.2870,103.8462"},
+            {"name": "Marina Bay Sands Observation Deck", "description": "57th floor views over the entire skyline.", "search_query": "singapore skyline", "coordinates": "1.2858,103.8607"},
+            {"name": "Orchard Road Shopping", "description": "Luxury and local brands on Singapore's main drag.", "search_query": "shopping", "coordinates": "1.3048,103.8328"},
         ],
     }
     
@@ -248,7 +248,7 @@ async def get_place_options_with_photos(airport_code: str, city_time_minutes: in
                 description=place["description"],
                 rating=4.5,  # Fallback rating
                 user_ratings_total=0,
-                coordinates="0,0",
+                coordinates=place["coordinates"],  # Real coordinates
                 address="",
                 types=["point_of_interest"],
                 photo_url=photo["url"],  # Hotlinked Unsplash photo
@@ -265,7 +265,7 @@ async def get_place_options_with_photos(airport_code: str, city_time_minutes: in
                 description=place["description"],
                 rating=4.5,
                 user_ratings_total=0,
-                coordinates="0,0",
+                coordinates=place["coordinates"],  # Real coordinates
                 address="",
                 types=["point_of_interest"],
             ))
