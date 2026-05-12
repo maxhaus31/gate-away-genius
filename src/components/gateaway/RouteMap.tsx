@@ -44,25 +44,32 @@ interface Props {
 
 export const RouteMap = ({ routeData, airportCode }: Props) => {
   const [mapUrl, setMapUrl] = useState<string>("");
+  const [apiKey] = useState<string | undefined>(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 
   useEffect(() => {
     // Build Google Maps Embed URL from waypoints
-    if (routeData.route.waypoints && routeData.route.waypoints.length > 0) {
-      const waypoints = routeData.route.waypoints;
+    if (routeData?.waypoints && routeData.waypoints.length > 0) {
+      const waypoints = routeData.waypoints;
       
-      // Format: waypoint1|waypoint2|waypoint3
-      const waypointStrs = waypoints
-        .map(wp => `${wp.lat},${wp.lng}`)
-        .join("|");
-      
-      // Use Google Maps Embed API (requires API key in VITE_GOOGLE_MAPS_API_KEY)
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      if (apiKey) {
-        const url = `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${waypoints[0].lat},${waypoints[0].lng}&destination=${waypoints[waypoints.length - 1].lat},${waypoints[waypoints.length - 1].lng}&waypoints=${waypoints.slice(1, -1).map(wp => `${wp.lat},${wp.lng}`).join("|")}&mode=transit`;
+      // Google Maps Embed API has limited support for waypoints
+      // Build a directions URL that shows the route with stops
+      if (apiKey && waypoints.length >= 2) {
+        // Use the first waypoint as origin and last as destination
+        // Intermediate waypoints as stops
+        const origin = `${waypoints[0].lat},${waypoints[0].lng}`;
+        const destination = `${waypoints[waypoints.length - 1].lat},${waypoints[waypoints.length - 1].lng}`;
+        
+        // Get intermediate waypoints (the selected places)
+        const intermediateWaypoints = waypoints.slice(1, -1);
+        const waypointsParam = intermediateWaypoints.length > 0
+          ? `&waypoints=${intermediateWaypoints.map(wp => `${wp.lat},${wp.lng}`).join("|")}`
+          : "";
+        
+        const url = `https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${origin}&destination=${destination}${waypointsParam}&mode=transit`;
         setMapUrl(url);
       }
     }
-  }, [routeData]);
+  }, [routeData, apiKey]);
 
   const { timing_summary: timing, route } = routeData;
 

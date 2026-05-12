@@ -1,10 +1,10 @@
 {
-  "9a4d2ca8569e35de4c13": {
-    "saved_at": "2026-05-11T09:54:14.207036+00:00",
+  "d73e4a3f69d5a1da4bc5": {
+    "saved_at": "2026-05-12T11:02:08.570269+00:00",
     "data": {
       "verdict": "safe",
       "verdict_description": "Plenty of room to canal rings and still be back at your gate without a sprint. Go.",
-      "headline": "You've got time! Quick Amsterdam adventure incoming \u2708\ufe0f",
+      "headline": "Rijksmuseum, Canals, 195 minutes spare? You're basically a Dutch efficiency expert!",
       "timeline": [
         {
           "label": "Disembark + immigration",
@@ -18,7 +18,7 @@
         },
         {
           "label": "Activity time",
-          "duration_minutes": 210,
+          "duration_minutes": 195,
           "color": "green"
         },
         {
@@ -50,9 +50,9 @@
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "Vondelpark",
-            "duration_minutes": 45,
+            "emoji": "\ud83d\udea4",
+            "title": "Iconic Canal View at Damrak",
+            "duration_minutes": 15,
             "coordinates": null
           },
           {
@@ -64,9 +64,9 @@
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "A'DAM Lookout",
-            "duration_minutes": 45,
+            "emoji": "\ud83c\udfdb\ufe0f",
+            "title": "Dam Square & Royal Palace Exterior",
+            "duration_minutes": 20,
             "coordinates": null
           },
           {
@@ -78,9 +78,9 @@
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "Bakers & Roasters",
-            "duration_minutes": 45,
+            "emoji": "\u26ea",
+            "title": "Historic Oude Kerk in De Wallen",
+            "duration_minutes": 25,
             "coordinates": null
           },
           {
@@ -99,11 +99,11 @@
           }
         ]
       },
-      "total_minutes": 360,
+      "total_minutes": 345,
       "buffer_minutes": 110,
-      "usable_minutes": 250,
-      "available_time_minutes": 250,
-      "city_time_minutes": 210,
+      "usable_minutes": 235,
+      "available_time_minutes": 235,
+      "city_time_minutes": 195,
       "airport": {
         "code": "AMS",
         "city": "Amsterdam",
@@ -119,128 +119,109 @@
       },
       "suggestions": [
         {
-          "emoji": "\u2b50",
-          "title": "Vondelpark",
-          "blurb": "Vondelpark \u2014 4.7/5 (59376 reviews)",
-          "minTimeNeeded": 45
+          "emoji": "\ud83d\udea4",
+          "title": "Iconic Canal View at Damrak",
+          "blurb": "Step out of Amsterdam Centraal Station and immediately immerse yourself in the city's quintessential canal scenery. Take a quick photo by the water, admire the charming gabled houses, and feel the unique atmosphere of Amsterdam. This is your first unmissable postcard moment.",
+          "minTimeNeeded": 15
         },
         {
-          "emoji": "\u2b50",
-          "title": "A'DAM Lookout",
-          "blurb": "A'DAM Lookout \u2014 4.6/5 (29425 reviews)",
-          "minTimeNeeded": 45
+          "emoji": "\ud83c\udfdb\ufe0f",
+          "title": "Dam Square & Royal Palace Exterior",
+          "blurb": "Walk a few minutes from Damrak to Dam Square, the historical heart of Amsterdam. Admire the impressive Royal Palace (Koninklijk Paleis) from the outside, see the National Monument, and soak in the bustling atmosphere of this central public square. It's a quick dip into Dutch history and urban life.",
+          "minTimeNeeded": 20
         },
         {
-          "emoji": "\u2b50",
-          "title": "Bakers & Roasters",
-          "blurb": "Bakers & Roasters \u2014 4.6/5 (2286 reviews)",
-          "minTimeNeeded": 45
+          "emoji": "\u26ea",
+          "title": "Historic Oude Kerk in De Wallen",
+          "blurb": "Experience a quick, respectful glimpse of Amsterdam's famous and unique De Wallen (Red Light District) by focusing on the historic Oude Kerk (Old Church). This beautiful medieval church, the city's oldest building, stands as a striking contrast amidst the area's lively streets. A brief walk around offers a unique cultural insight. (Note: Photography of windows is strictly prohibited and disrespectful).",
+          "minTimeNeeded": 25
         }
       ],
       "place_options": [
         {
-          "place_id": "ChIJz3y0xeIJxkcRNcogBVV41Gw",
-          "name": "Vondelpark",
-          "description": "Vondelpark \u2014 4.7/5 (59376 reviews)",
-          "rating": 4.7,
-          "user_ratings_total": 59376,
-          "coordinates": "52.3579946,4.8686484",
-          "address": "Amsterdam",
+          "place_id": "fallback_amsterdam_canals",
+          "name": "Amsterdam Canals",
+          "description": "UNESCO-listed canal ring - quintessential Amsterdam.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "52.3700,4.8952",
+          "address": "",
           "types": [
-            "park",
-            "tourist_attraction",
-            "point_of_interest",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-to0S4wtrc1-ttyxG0lAy23Wur_pgIvFy_R5OCM8AhEkZuARnGdwH3upmGIY5KTKmLDlYu2nAgDFVaf9BFfLcFlEzy8twyWl5kicN-_mxsAsH1VfSOfqJwuYZcCrTTlDrKicS_kHpzoTr8R7ga8cZdCyQMG7gxgTuARhAiNZ98M2Xjl6sG-9QRLTFY1oi7gIcZCDvfgkXBva60Rzf29yMYEvefNtmFJCHiP8jYcdtQV4ohmtgzByuvjIjpGgirfcNofy6L1FknjZcSqY9IMECyFJiwYtoePNm6Vb_bPRRqI9f3Hzi33rr2cx1CdbQevxGhCfZmPICmv6n9xTPzWwHGpB9DxAjGmjHfxeK9CE_LmKIgD7DIi8pndO7DKze2JqiDdFFmd_bilIpOXX46UW60JRt6fyBAv0pZfaMCgyvmFNHBeSFM7dk3PBLdpy6XOamXomuBrbkBb3SxrXnxjMZEc-8XKXce9DHfVZQzyfuIXllEVxKb2o6VIS2Xci4mLBYNtGE_XVh_ptRTwqRkn-VsFYvHprSa-GR1KFsJmpJxbVfC5b-DklqjlYaDUvnaezGQstgvj&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1625826560092-fc14d19cd40f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBjYW5hbHxlbnwwfHx8fDE3Nzg1Mjg4NjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Pedro Cunha",
+          "photographer_url": "https://unsplash.com/@pedrotiagocunha?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/nqxKj83MonA/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBjYW5hbHxlbnwwfHx8fDE3Nzg1Mjg4NjZ8MA"
         },
         {
-          "place_id": "ChIJu0txQLQJxkcR9gp6-ShcF6Y",
-          "name": "A'DAM Lookout",
-          "description": "A'DAM Lookout \u2014 4.6/5 (29425 reviews)",
-          "rating": 4.6,
-          "user_ratings_total": 29425,
-          "coordinates": "52.3839541,4.902064999999999",
-          "address": "IJpromenade 4, Amsterdam",
+          "place_id": "fallback_rijksmuseum",
+          "name": "Rijksmuseum",
+          "description": "World-class art museum - home to masterpieces.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "52.3601,4.8852",
+          "address": "",
           "types": [
-            "tourist_attraction",
-            "point_of_interest",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sxl33pUvu5Z3PcPDiZSUWZaSKmNdJ1pMwqDomi6kJLSaO-BsLI_6c46vKrLw9Xjj7Qb7WAfkyUgEp4j4e0MAUI6Rnb-5CRzr12d_SmEGiHn965N6Ln0rZoZC7iyFVwfk16FkcxXRqgIv-HUa_6S_80JxjKH90rU-9J7SU1FpEJzKrv3njNc1x-QfJ8iptWlaDzfi-GhLAsjsqYyq8SDry57nrW_TZpZ_te7RCMLwA6yX56gnWSexR1d1xf7EzakI7guiOeOiqCXJwle2nQJq4yHhQNH7hO2aaASgiRHh_fAHtgfqBjy9nYzORP1vKNk39Ihzvw7EtNw4e2ngBcZoqw03VRB380Erocyxj5bzHuqs-Js5tKfpntdwjETwZNzNx9WK1EeSBExT0EsgEmuGWJPKYIXXr9gm5isP_psOGkRACb9H9sER7zdSnxQUw9CMBv3Vyw4OyBGNjP8JBvfeIobsqXoe8dXqBFJJDni6QbzzGSKXiqmPE_Vi1cqh3cUCFIQPwqZtRSEATqA89J2F1fQYIMRfScNQ8aqxyWel5x-iep-VRLfggd1-jCqMYqftjc7-YzVj4CyA&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1641290091305-70283afc4e88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxtdXNldW0lMjBhcnR8ZW58MHx8fHwxNzc4NTI4ODY2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Alex Suprun",
+          "photographer_url": "https://unsplash.com/@sooprun?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/CGOK0XWYCZE/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxtdXNldW0lMjBhcnR8ZW58MHx8fHwxNzc4NTI4ODY2fDA"
         },
         {
-          "place_id": "ChIJ4S8JmqMJxkcR64Ym9WhK7pE",
-          "name": "Bakers & Roasters",
-          "description": "Bakers & Roasters \u2014 4.6/5 (2286 reviews)",
-          "rating": 4.6,
-          "user_ratings_total": 2286,
-          "coordinates": "52.37022210000001,4.9126387",
-          "address": "Kadijksplein 16, Amsterdam",
+          "place_id": "fallback_jordaan_district",
+          "name": "Jordaan District",
+          "description": "Charming neighborhood with galleries, caf\u00e9s, and antique shops.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "52.3750,4.8770",
+          "address": "",
           "types": [
-            "bakery",
-            "cafe",
-            "bar",
-            "restaurant",
-            "food",
-            "store",
-            "point_of_interest",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-tE7AWumY8XLeDr8Sxgy9A9vELhlxL_3C16AkfWcHDpAPm_7siu7eadoAIWKK5OBwZa66vbCR5uPSNYOYVp1wgDVJj7fxeJWTON8rx3qnVM43iYG1bkOKSEYUUelRRq6Yywp0fO2gbCtJLPA3id2c49AEoIYPwKN152YyAvUTD9MW54tINGvV5LOCzjjDhYcexdK5eGuG0Kp2OEDyo7vzr0FflssQaLRY9ZZEZn5uq0xH0GIXrdZ7eU7KUa-qL-vTSYR8pcQMHZCOtA2FLBsYz0pmIoyJF2fHIiVmdc52uA9niN0gPBxQtwS2yd2ky1QYPvUDVRTJm9xWhVmqwD-V-FTn9fx0kHHZky-1d2EK9rXk-D-1znGvWnpH2cMOhxzHKPXv_WlO-thJyRMo8sigCGlcjcOdZXGvjR4pEpwTBM03KujUwoRRPoMuzG0V9yETV1-5x1rgwonrvPEaKBtZXW33eMhXbmD7D8zphRbhVD5TQ-5QIlDBFe15A6dr_nt-VOi81f_hiFFPH9iPMIp4IYxy8KnDN-Cl7uE1wYDpWQzgTj9LVZ2MYO2s9Fp5CSBUx0rC8eJcNnIincvFeO6XN-_uQQow&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1586456078321-6658dc4c85d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBuZWlnaGJvcmhvb2R8ZW58MHx8fHwxNzc4NTI4ODY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Liam McGarry",
+          "photographer_url": "https://unsplash.com/@liammcgarry?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/DCBKgTl_zI4/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBuZWlnaGJvcmhvb2R8ZW58MHx8fHwxNzc4NTI4ODY3fDA"
         },
         {
-          "place_id": "ChIJXYYUs-kJxkcRgLEv5GixBq8",
-          "name": "Restaurant Black",
-          "description": "Restaurant Black \u2014 4.2/5 (1798 reviews)",
-          "rating": 4.2,
-          "user_ratings_total": 1798,
-          "coordinates": "52.3653534,4.884468099999999",
-          "address": "Prinsengracht 703, Amsterdam",
+          "place_id": "fallback_anne_frank_house",
+          "name": "Anne Frank House",
+          "description": "Moving historical museum - book ahead online.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "52.3752,4.8838",
+          "address": "",
           "types": [
-            "bar",
-            "restaurant",
-            "food",
-            "point_of_interest",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-t6cNgRoC1DR8c4si5RrysftiV9eFiO0iz6KiWyRxk0N1lVbJDCjadwqgKdxUtwrX_jcHEewNdKtbfXgtGXF79h1F416ZY3DdLwHrw-luji1rLSrokr-EWIqtxUdDGRgcvkMdNmlxvkV_Yo1eEGlPuwuxiSlWYJrsEuycMtBlHsTHrcMhvIcCEb0CEmNDmUnAmlcITG5HkypZ2omPBlsEI-m9Eo8NmOz4habALPRUorkz4YH69Za7nYX7T_YVEEGTSMi4VmyO5adE1T8dNsBuNE8SZl3-lBpZIXSA_owUUVXbftNDvcHaJmn4aWU3N52pKucajpj01EBQOQSIzuNf7wSqBfrc1uTRmRwGRY01UZtNt7V_3Jbs88F3QeqQaMuvAqiB1tPKQhFY1TIYSZi3_sqSDKoDbi1Q0TipWiBwx-qrmzvacv49ThaOkaDvKAglRSGcVZVrEnjXlMUaeLiK58Zj12ddcNieRfk97jdGS9_twA6dPirwVrAM1ScdBsAKfK5PI8s9zpj4Yqnfzfm0EIqRFwIO-dVKzBml86LPtJ_Z2lkjJXSI08st6AURICYEx-ZLym&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1609254681990-b4e9f66066d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBoaXN0b3J5fGVufDB8fHx8MTc3ODUyODg2N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Aquiles Carattino",
+          "photographer_url": "https://unsplash.com/@aqui_c?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/KhMWVHF0xtI/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxhbXN0ZXJkYW0lMjBoaXN0b3J5fGVufDB8fHx8MTc3ODUyODg2N3ww"
         },
         {
-          "place_id": "ChIJLZFgVb8JxkcRSyj7Tw7IlSY",
-          "name": "Wok to Walk Damstraat",
-          "description": "Wok to Walk Damstraat \u2014 4.3/5 (1599 reviews)",
-          "rating": 4.3,
-          "user_ratings_total": 1599,
-          "coordinates": "52.3719305,4.8954868",
-          "address": "Damstraat 44, Amsterdam",
+          "place_id": "fallback_bitterballen_&_brown_caf\u00e9",
+          "name": "Bitterballen & Brown Caf\u00e9",
+          "description": "Traditional Dutch snack in a cozy local pub.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "52.3689,4.8981",
+          "address": "",
           "types": [
-            "restaurant",
-            "food",
-            "point_of_interest",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sFFdW1x9R-qU6i8QYdAF_lOBQ4h37-2e1aXPzC4cRqTaGo5e79smUFYUeoVF9a1iJU9OcXnIympwE9mXah5WSJRw6QDBXN0soN4vIznqWopzze_VxofT0kTWBEXreNFvxGtKAKhyxgHAqXHc38hTzSVaBsYIpR_v1YVdb-10Y-5mfh_-azZYDzSYyJ-6Roq_FNJpyIK4Pq_VD1ADrCNCOd98qXka0yCVubOb9iC7TPBNujnaSL-jaACARIMhSnQOL2mZBUI8WTe-HEzlDK9UcgPgzvSPpRNkO9d05e3hJANOt_vY9BxUu8w2680f1wDouuFYthFP-QDx7qtvt3416u6Q5kTi64hRyeZzDxh-fxT92d0t03gvaPgd_PcfK7IhQe0WkJCsF_u7zMVC8noYyvM3F0zAabVkQHOzZTkhraAx7rJJGhik44GBsHTg0UHstCo29F_8rjbamCy6ngUWnYzAdy2T9LXWkb3cEcqCREECh9Z2mk6K7u1CwW-FqT9y3zzQan7DlD4lxA1ko_REX3S3X_XvX113uZNnaeML1palPS86NL7sBT-YYl2WSK1UcUeQ&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1548091960-fa93ce7f544d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxkdXRjaCUyMGZvb2R8ZW58MHx8fHwxNzc4NTI4ODY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Stephanie LeBlanc",
+          "photographer_url": "https://unsplash.com/@sleblanc01?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/NZH0p2_2kMo/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxkdXRjaCUyMGZvb2R8ZW58MHx8fHwxNzc4NTI4ODY4fDA"
         }
       ],
       "immigration_buffer": 0,
@@ -270,36 +251,36 @@
       ]
     }
   },
-  "80cf10fe085a4de5a856": {
-    "saved_at": "2026-05-11T10:52:04.325305+00:00",
+  "1afef630aa0dd5e7e946": {
+    "saved_at": "2026-05-12T11:09:21.056823+00:00",
     "data": {
       "verdict": "safe",
-      "verdict_description": "Plenty of room to canal rings and still be back at your gate without a sprint. Go.",
-      "headline": "You've got time! Quick Amsterdam adventure incoming \u2708\ufe0f",
+      "verdict_description": "Plenty of room to hawker centres and still be back at your gate without a sprint. Go.",
+      "headline": "You've got time! Quick Singapore adventure incoming \u2708\ufe0f",
       "timeline": [
         {
           "label": "Disembark + immigration",
-          "duration_minutes": 25,
+          "duration_minutes": 30,
           "color": "red"
         },
         {
-          "label": "Travel to city (20 min)",
-          "duration_minutes": 20,
+          "label": "Travel to city (30 min)",
+          "duration_minutes": 30,
           "color": "blue"
         },
         {
           "label": "Activity time",
-          "duration_minutes": 210,
+          "duration_minutes": 175,
           "color": "green"
         },
         {
-          "label": "Travel back (20 min)",
-          "duration_minutes": 20,
+          "label": "Travel back (30 min)",
+          "duration_minutes": 30,
           "color": "blue"
         },
         {
           "label": "Re-entry security + buffer",
-          "duration_minutes": 85,
+          "duration_minutes": 80,
           "color": "orange"
         }
       ],
@@ -308,22 +289,22 @@
           {
             "type": "airport",
             "emoji": "\u2708\ufe0f",
-            "title": "Schiphol (Arrive)",
-            "duration_minutes": 25,
+            "title": "Changi (Arrive)",
+            "duration_minutes": 30,
             "coordinates": null
           },
           {
             "type": "travel",
             "emoji": "\ud83d\ude8c",
-            "title": "Direct train \u2192 Centraal (every 10 min)",
-            "duration_minutes": 20,
+            "title": "MRT East-West \u2192 Marina Bay",
+            "duration_minutes": 30,
             "coordinates": null
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "Vondelpark",
-            "duration_minutes": 45,
+            "emoji": "\ud83d\udca7",
+            "title": "HSBC Rain Vortex (Jewel Changi Airport)",
+            "duration_minutes": 30,
             "coordinates": null
           },
           {
@@ -335,9 +316,9 @@
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "A'DAM Lookout",
-            "duration_minutes": 45,
+            "emoji": "\ud83c\udf33",
+            "title": "Shiseido Forest Valley (Jewel Changi Airport)",
+            "duration_minutes": 35,
             "coordinates": null
           },
           {
@@ -349,174 +330,408 @@
           },
           {
             "type": "activity",
-            "emoji": "\u2b50",
-            "title": "Restaurant Argentalia Amsterdam",
-            "duration_minutes": 45,
+            "emoji": "\ud83e\udd8b",
+            "title": "Butterfly Garden (Changi Airport Terminal 3)",
+            "duration_minutes": 30,
             "coordinates": null
           },
           {
             "type": "travel",
             "emoji": "\ud83d\ude8c",
-            "title": "Return to Schiphol",
-            "duration_minutes": 20,
+            "title": "Return to Changi",
+            "duration_minutes": 30,
             "coordinates": null
           },
           {
             "type": "airport",
             "emoji": "\ud83d\udec2",
             "title": "Security + Gate",
-            "duration_minutes": 85,
+            "duration_minutes": 80,
             "coordinates": null
           }
         ]
       },
-      "total_minutes": 360,
+      "total_minutes": 345,
       "buffer_minutes": 110,
-      "usable_minutes": 250,
-      "available_time_minutes": 250,
-      "city_time_minutes": 210,
+      "usable_minutes": 235,
+      "available_time_minutes": 235,
+      "city_time_minutes": 175,
       "airport": {
-        "code": "AMS",
-        "city": "Amsterdam",
-        "name": "Schiphol",
-        "country": "Netherlands",
-        "flag": "\ud83c\uddf3\ud83c\uddf1",
-        "transportToCityMin": 20,
-        "transportLabel": "Direct train \u2192 Centraal (every 10 min)",
-        "reentrySecurityMin": 30,
+        "code": "SIN",
+        "city": "Singapore",
+        "name": "Changi",
+        "country": "Singapore",
+        "flag": "\ud83c\uddf8\ud83c\uddec",
+        "transportToCityMin": 30,
+        "transportLabel": "MRT East-West \u2192 Marina Bay",
+        "reentrySecurityMin": 25,
         "walkToGateMin": 10,
         "checkinCutoffMin": 45,
-        "vibe": "canal rings, brown caf\u00e9s, bikes everywhere"
+        "vibe": "hawker centres, skyline gardens, late-night neon"
       },
       "suggestions": [
         {
-          "emoji": "\u2b50",
-          "title": "Vondelpark",
-          "blurb": "So popular, even the ducks have reviews.",
-          "minTimeNeeded": 45
+          "emoji": "\ud83d\udca7",
+          "title": "HSBC Rain Vortex (Jewel Changi Airport)",
+          "blurb": "Marvel at the world's tallest indoor waterfall, a spectacular centerpiece of Jewel Changi Airport. This stunning cascade is a true architectural and natural wonder, easily accessible from the airport's transit areas, perfect for breathtaking photos and a quick awe-inspiring moment.",
+          "minTimeNeeded": 30
         },
         {
-          "emoji": "\u2b50",
-          "title": "A'DAM Lookout",
-          "blurb": "Sky-high views and a thrilling swing.",
-          "minTimeNeeded": 45
+          "emoji": "\ud83c\udf33",
+          "title": "Shiseido Forest Valley (Jewel Changi Airport)",
+          "blurb": "Immerse yourself in the lush, multi-level indoor garden surrounding the Rain Vortex, easily accessible from the airport's transit areas. Take a serene stroll through this vibrant green sanctuary, enjoying the diverse flora and tranquil atmosphere \u2013 a refreshing escape from travel.",
+          "minTimeNeeded": 35
         },
         {
-          "emoji": "\u2b50",
-          "title": "Restaurant Argentalia Amsterdam",
-          "blurb": "Delicious Italian, no passport required.",
-          "minTimeNeeded": 45
+          "emoji": "\ud83e\udd8b",
+          "title": "Butterfly Garden (Changi Airport Terminal 3)",
+          "blurb": "Step into a tropical haven housing over a thousand butterflies within Changi Airport's Terminal 3 transit area. Witness these beautiful creatures up close in a two-storey conservatory, complete with a 6-metre grotto waterfall. A unique, calming experience before your next flight.",
+          "minTimeNeeded": 30
         }
       ],
       "place_options": [
         {
-          "place_id": "ChIJz3y0xeIJxkcRNcogBVV41Gw",
-          "name": "Vondelpark",
-          "description": "So popular, even the ducks have reviews.",
-          "rating": 4.7,
-          "user_ratings_total": 59376,
-          "coordinates": "52.3579946,4.8686484",
-          "address": "Amsterdam",
-          "types": [
-            "park",
-            "tourist_attraction",
-            "point_of_interest",
-            "establishment"
-          ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-uNbxFt8GRaT6v_Fp3ARcRzSpq8_OZNtch0Y-WNQHykMZkXja4thDVFjOo_eRR86Bt3s15xC_nROB7XHBVVtcC3TkOQM2mZlLlpryb_nIKmQH7fvNDqKhvu0-kJytZS3EGmFTt33KPvRsX-49jDZAYH5KBfcfW0tOZO2tI4LuLAhJmb3A-xcpZxdL4olinXuM0RgH2-hYoMN1u8TE0jcuQ5JoQ9853bBHYUZQxY3iLwewBXpT7XimbG2GzlGUJeOnoTTfnaD6O1KRL5FOh8O5dJ26q4UBlYqz_Ul-wZdSKgmLyvYD04BgEtA_ziPQW4cS14B1wXlOkN46nowZ28kgd3dV4cQmzPjSxo8nfpdLBKFqmjI0AWTKY_k_cEEh2sUd0VDOXXZyl8MF8Hr-K8HJ2hI3VLdS_c1QJzIb9nNEG1jEXzv_TaShx8F2CaHohXQZ01BpU_SuZqiFDTtc28wtZ0XC95Lozd1-5bs1K6YFbAjDyuqiy-hJ28RwOgSEJ14yBETlPf1TGV6H0piLVsl1pkCMgaz3UCybBuHGfda5DeQbJSM_szfV60UWTa4ROJ4fS2ktO-&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
-        },
-        {
-          "place_id": "ChIJu0txQLQJxkcR9gp6-ShcF6Y",
-          "name": "A'DAM Lookout",
-          "description": "Sky-high views and a thrilling swing.",
-          "rating": 4.6,
-          "user_ratings_total": 29426,
-          "coordinates": "52.3839541,4.902064999999999",
-          "address": "IJpromenade 4, Amsterdam",
-          "types": [
-            "tourist_attraction",
-            "point_of_interest",
-            "establishment"
-          ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-u6OOhRNyCkzfDNv4bHjyOIq4zt8dB6DCz-6erRuBjWLmy88bP1oT3QSqfTQf7SHDtBmhqdNUCo1ljmFMcZUVubzmCDvQVAQk0TzvAiIxWhUg6YzpzqyNn3j0xIyrDRVA1Sa4Hjfa68dHMUck0MRdVQzZ5C5MdQJiRp7asGGeB1yP4aXwA9PT3zgATuGbJJPxj22RuH6z6S9eD13rLlhX-yPp9nQRbCSVMsAo-xDBUDkoZf36A-9rBKAWtrH-bsKhYB7oto9VbI-8BbcP8cDhuHvCFuiHOiuw9XiBY7Ub-o2P2RgbrBIRQeOWPCeXxXiXtrZYoXtc_SO_gq9tztBTaIhJbxyeYxKaNU4JY0KYRR2eqj43ZSkHRRdg-BhV8sUk-kJUV4JlTWBHSsKeMWuEXxlThBd1rhKxQjQPEMKq8iBi8koRCbYhECcFpJR_HL40npIB3DK0qsGm-FutW-7-ka07r7t0M_t43dJ-0msMrHOkZwhncsnYyBUVx6Bnv1UTv53yv0d7BK0zRy7QAKLL0s7jHZ7Fvx1LQ5Pr8xuKzrWDrW3tC3A5AUbmWn5db_UeCdYGmkC4SMNw&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
-        },
-        {
-          "place_id": "ChIJL9yiSLgJxkcRuPgxarR-2hI",
-          "name": "Restaurant Argentalia Amsterdam",
-          "description": "Delicious Italian, no passport required.",
+          "place_id": "fallback_gardens_by_the_bay",
+          "name": "Gardens by the Bay",
+          "description": "Futuristic supertrees and enchanting light show.",
           "rating": 4.5,
-          "user_ratings_total": 2731,
-          "coordinates": "52.3756196,4.8986093",
-          "address": "Warmoesstraat 35, Amsterdam",
+          "user_ratings_total": 0,
+          "coordinates": "1.2816,103.8636",
+          "address": "",
           "types": [
-            "restaurant",
-            "point_of_interest",
-            "food",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sG50Q2kUfNnazhtNK_Vs5PF8VnzuqBNrqJ08xj27MWECY1c-XxNu-7vvGZLGix0UoUheCc7-vnHIscuvLbl-g_s0JwncuRL1TGxituYxfwWHWR3yy76iHvaqrxdK_wbGFqMikSx1OUiyGQsBDFoxXnq9UNorEFRF-RetQjZAEAjUMQBQ9hsiSKW0zUa36P87wg_99m8HvekjLZpd0JVAxO_fU_9KOrdvp46MCJto9D-I23IOBHkSjQUaZxus5jQnueuZpVO_N8Q7HBr-RJ0LlQsKuceI9nx1ggvOzwCThS6gwgHSvZrloa25iuOjvb4xb2qgOlF8QLiTHTP0L5O0ijEH0Pu5W-M1eQmYNJGZGA0Ayiwp5DpvFB-j2Zf9MucY7TMSVBD4sw7oBCRE1V-epedt1Cuw7kr42Xp_tuxajyGaB-AfgbE2xuVzW1dAoVVR5cfh1vjUsa6LvNVCVZgvGH4N_tBm2vpG1gTaRuGqwFfMgmnnI9QSrwY_MGmedUgDneRIZm5WFiUpYE5vDyjo4HRnNzrQyCiTW34udBY2WANRK2iCEa0Y-AyKa-t2usfyfAojJVClIKGA&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1558289675-f8a783516e7b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBnYXJkZW5zfGVufDB8fHx8MTc3ODU4NDE1OHww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Daniel Welsh",
+          "photographer_url": "https://unsplash.com/@wel_shy?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/THix6RDJ1Bw/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBnYXJkZW5zfGVufDB8fHx8MTc3ODU4NDE1OHww"
         },
         {
-          "place_id": "ChIJ4S8JmqMJxkcR64Ym9WhK7pE",
-          "name": "Bakers & Roasters",
-          "description": "Fuel your day with brews and bakes.",
-          "rating": 4.6,
-          "user_ratings_total": 2286,
-          "coordinates": "52.37022210000001,4.9126387",
-          "address": "Kadijksplein 16, Amsterdam",
+          "place_id": "fallback_jewel_changi_-_waterfall",
+          "name": "Jewel Changi - Waterfall",
+          "description": "World's tallest indoor waterfall - don't miss it!",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "1.3581,103.9868",
+          "address": "",
           "types": [
-            "cafe",
-            "bar",
-            "restaurant",
-            "point_of_interest",
-            "bakery",
-            "store",
-            "food",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-vreFNcJIKLEAUWfbPMkErwNwzozNynzHwCACOWJxZ-NRaJu-r99NZdzPUPaA7TTv38vefFH20ag1AZkUXjCK_gTHbpgFuwlXn2GbpmYZCQx13AyQzP_jIhaU9PD1g-dhdDMIS0P9WTNLv5Wlh1O1i0jeZtnlTIBmyPiVn-oLQYLX_BbAHJXpxlkuusOqFf3fYN9djVi7qXWhF8TVDH74zbceSA4CgUBymXuG8hRFJ39HapaAwWXOKdx8VlHjbPYN90PH-uUTkIxJFrFQci5lsanXuOaAQPOqdHryCcFtRt5kXavIysUOfe4taB9exKuSp4xe7fo8EEvx7jKSq9BSnfM6e5Yau5EB9DEQLSO0pMHrX8Pm8qhyKf12sTPnjRzUkTCMa34hQAYUz0l6_x7-kfPYi5A8vo-iCpiio_NjH98BmpZGdJKI59mY8iX_U4iMPBm6q-GCs6HwNsqL6FwrJsJGXmNANmRpvJoUL3PLODW_hP9LR6E3mE7DD2rAwQcgWOTbMrPhMs06qo2GmfQPXAXKMmVglggTgowvOyLCEPdc0GRZxB7MmkpHOHZR4vo7foRucbT4AYTNojfdyXKeoT2Cf9CA&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHx3YXRlcmZhbGx8ZW58MHx8fHwxNzc4NTg0MTU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Jeffrey  Workman",
+          "photographer_url": "https://unsplash.com/@jeffreyp?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/YvkH8R1zoQM/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHx3YXRlcmZhbGx8ZW58MHx8fHwxNzc4NTg0MTU4fDA"
         },
         {
-          "place_id": "ChIJaR93t_QJxkcRcPwZ9UwKFOQ",
-          "name": "Portugalia Tasca",
-          "description": "Portugal on a plate, right in Amsterdam.",
-          "rating": 4.6,
-          "user_ratings_total": 2239,
-          "coordinates": "52.3668091,4.89724",
-          "address": "Bakkersstraat 12, Amsterdam",
+          "place_id": "fallback_hawker_chan_-_chicken_rice",
+          "name": "Hawker Chan - Chicken Rice",
+          "description": "Michelin-starred street food - legend in a stall.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "1.2870,103.8462",
+          "address": "",
           "types": [
-            "restaurant",
-            "point_of_interest",
-            "food",
-            "establishment"
+            "point_of_interest"
           ],
-          "photo_url": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=Ab43m-sVEaJg_VzraxqFpfg0iAiETPW7RGFpYhtk8Z-TwkLqSEIbm7I6IEyM24gE2BPDXmox90Dox3bcBINTSl4d_oqXY_YGCDEcdNETJ97RksUMll8WhRllL6UHCAJUJt7NH0Cniq2pQxAaiQOZ9OKWgak99oWXVG3hvq8M6Ya-r_wjeVFK2Q_jpiWD_RW-37RDS8q_Dwh9ekGW7gWCeKeSbWIU1RXalpxNDuAsTvOBAFWznFn0PG0hLCkLdD5C-ZUtDa0C1rhLE9Q5VidTYs3ak1L7lRfM4NERzp1KafJ274XPIjlrfU1cItlw9u8NEyUZdo0HMsq-s5uHU3dTEdZOZ9Fa5xHXoRs7xA1fcWglixGPH7Ku2icD6ozTUhbtibrdye_7K5BZqR4Bk0jjEuqgLXTsz_WFtoVfyi99sdTvZAUsa7YYFKGhUt7c5lDvbk5-lAjSFZdb06kFZ3usxO-7o5u4STL5ce5TZ9cdHXmVFnj4CjltN4HSiAcn6T4PkPbQlLKX4He1H5iAU0Ono6dwGGXkci4_wWAVYQKTaJwJFkDXl9gYzC1-47koNUlqv7_WyZq7wvvt&key=AIzaSyAlAzv8N0A-c2M2AnwVFa2XfmM4tqYFOV0",
-          "photographer_name": null,
-          "photographer_url": null,
-          "unsplash_url": null,
-          "download_location": null
+          "photo_url": "https://images.unsplash.com/photo-1584198414538-f469f6fad430?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBmb29kfGVufDB8fHx8MTc3ODU4NDE1OHww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Ethan Hu",
+          "photographer_url": "https://unsplash.com/@ethanhjy?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/NRTptNBkLLw/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBmb29kfGVufDB8fHx8MTc3ODU4NDE1OHww"
+        },
+        {
+          "place_id": "fallback_marina_bay_sands_observation_deck",
+          "name": "Marina Bay Sands Observation Deck",
+          "description": "57th floor views over the entire skyline.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "1.2858,103.8607",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/flagged/photo-1562503542-2a1e6f03b16b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBza3lsaW5lfGVufDB8fHx8MTc3ODU4NDE1OXww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Swapnil Bapat",
+          "photographer_url": "https://unsplash.com/@unfilteredkopi?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/sJ7pYyJFyuA/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaW5nYXBvcmUlMjBza3lsaW5lfGVufDB8fHx8MTc3ODU4NDE1OXww"
+        },
+        {
+          "place_id": "fallback_orchard_road_shopping",
+          "name": "Orchard Road Shopping",
+          "description": "Luxury and local brands on Singapore's main drag.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "1.3048,103.8328",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1483985988355-763728e1935b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaG9wcGluZ3xlbnwwfHx8fDE3Nzg1ODQxNTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "freestocks",
+          "photographer_url": "https://unsplash.com/@freestocks?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/_3Q3tsJ01nc/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxzaG9wcGluZ3xlbnwwfHx8fDE3Nzg1ODQxNTl8MA"
+        }
+      ],
+      "immigration_buffer": 5,
+      "safety_buffer_breakdown": {
+        "disembark_and_immigration": 30,
+        "re-entry_security_singapore": 25,
+        "walk_to_gate": 10,
+        "check-in_/_boarding_cutoff": 45
+      },
+      "buffer_breakdown": [
+        {
+          "label": "Disembark + immigration",
+          "minutes": 30
+        },
+        {
+          "label": "Re-entry security (Singapore)",
+          "minutes": 25
+        },
+        {
+          "label": "Walk to gate",
+          "minutes": 10
+        },
+        {
+          "label": "Check-in / boarding cutoff",
+          "minutes": 45
+        }
+      ]
+    }
+  },
+  "30ccdce9801514973184": {
+    "saved_at": "2026-05-12T11:24:37.624076+00:00",
+    "data": {
+      "verdict": "safe",
+      "verdict_description": "Plenty of room to tile-lined alleys and still be back at your gate without a sprint. Go.",
+      "headline": "Pra\u00e7a do Com\u00e9rcio + Manteigaria Nata? You'll nail it, 175 minutes to spare for celebration!",
+      "timeline": [
+        {
+          "label": "Disembark + immigration",
+          "duration_minutes": 25,
+          "color": "red"
+        },
+        {
+          "label": "Travel to city (35 min)",
+          "duration_minutes": 35,
+          "color": "blue"
+        },
+        {
+          "label": "Activity time",
+          "duration_minutes": 175,
+          "color": "green"
+        },
+        {
+          "label": "Travel back (35 min)",
+          "duration_minutes": 35,
+          "color": "blue"
+        },
+        {
+          "label": "Re-entry security + buffer",
+          "duration_minutes": 75,
+          "color": "orange"
+        }
+      ],
+      "activity_itinerary": {
+        "steps": [
+          {
+            "type": "airport",
+            "emoji": "\u2708\ufe0f",
+            "title": "Humberto Delgado (Arrive)",
+            "duration_minutes": 25,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\ude8c",
+            "title": "Metro Red Line \u2192 Baixa-Chiado",
+            "duration_minutes": 35,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\ud83c\udfdb\ufe0f",
+            "title": "Pra\u00e7a do Com\u00e9rcio & Cais das Colunas",
+            "duration_minutes": 20,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\udeb6",
+            "title": "Travel between activities",
+            "duration_minutes": 15,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\ud83c\udf6e",
+            "title": "Pastel de Nata & Espresso at Manteigaria",
+            "duration_minutes": 20,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\udeb6",
+            "title": "Travel between activities",
+            "duration_minutes": 15,
+            "coordinates": null
+          },
+          {
+            "type": "activity",
+            "emoji": "\ud83d\udea1",
+            "title": "Admire Elevador de Santa Justa (from below)",
+            "duration_minutes": 15,
+            "coordinates": null
+          },
+          {
+            "type": "travel",
+            "emoji": "\ud83d\ude8c",
+            "title": "Return to Humberto Delgado",
+            "duration_minutes": 35,
+            "coordinates": null
+          },
+          {
+            "type": "airport",
+            "emoji": "\ud83d\udec2",
+            "title": "Security + Gate",
+            "duration_minutes": 75,
+            "coordinates": null
+          }
+        ]
+      },
+      "total_minutes": 345,
+      "buffer_minutes": 100,
+      "usable_minutes": 245,
+      "available_time_minutes": 245,
+      "city_time_minutes": 175,
+      "airport": {
+        "code": "LIS",
+        "city": "Lisbon",
+        "name": "Humberto Delgado",
+        "country": "Portugal",
+        "flag": "\ud83c\uddf5\ud83c\uddf9",
+        "transportToCityMin": 35,
+        "transportLabel": "Metro Red Line \u2192 Baixa-Chiado",
+        "reentrySecurityMin": 20,
+        "walkToGateMin": 10,
+        "checkinCutoffMin": 45,
+        "vibe": "tile-lined alleys, past\u00e9is de nata, golden-hour viewpoints"
+      },
+      "suggestions": [
+        {
+          "emoji": "\ud83c\udfdb\ufe0f",
+          "title": "Pra\u00e7a do Com\u00e9rcio & Cais das Colunas",
+          "blurb": "Step into Lisbon's grandest square, Pra\u00e7a do Com\u00e9rcio, opening right onto the Tagus River. Admire the iconic Arco da Rua Augusta and the statue of King Jos\u00e9 I. Walk towards the Cais das Colunas (Columns Pier) to feel the city's maritime history and capture stunning riverfront photos. It's easily accessible by metro.",
+          "minTimeNeeded": 20
+        },
+        {
+          "emoji": "\ud83c\udf6e",
+          "title": "Pastel de Nata & Espresso at Manteigaria",
+          "blurb": "Indulge in a warm, freshly baked pastel de nata, Lisbon's iconic custard tart, often served with a sprinkle of cinnamon. Pair it with a quick, strong espresso. Manteigaria is renowned for its quality and offers a quick, authentic experience in the bustling Chiado district, just a short walk from Pra\u00e7a do Com\u00e9rcio.",
+          "minTimeNeeded": 20
+        },
+        {
+          "emoji": "\ud83d\udea1",
+          "title": "Admire Elevador de Santa Justa (from below)",
+          "blurb": "Marvel at the intricate ironwork of the Elevador de Santa Justa, a neo-Gothic industrial marvel designed by an apprentice of Gustave Eiffel. While riding it takes too long for a quick layover, a speedy visit to its base allows for impressive photos and appreciation of its unique architecture, connecting Baixa to Chiado.",
+          "minTimeNeeded": 15
+        }
+      ],
+      "place_options": [
+        {
+          "place_id": "fallback_pra\u00e7a_do_com\u00e9rcio",
+          "name": "Pra\u00e7a do Com\u00e9rcio",
+          "description": "Historic riverside plaza with stunning views.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "38.7072,-9.1370",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1681995585237-12bf8632d485?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjBwbGF6YXxlbnwwfHx8fDE3Nzg1Mjg4MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Lisa van Vliet",
+          "photographer_url": "https://unsplash.com/@lisaaxv?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/tvDL3Y3eIx8/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjBwbGF6YXxlbnwwfHx8fDE3Nzg1Mjg4MTJ8MA"
+        },
+        {
+          "place_id": "fallback_past\u00e9is_de_nata_at_manteigaria",
+          "name": "Past\u00e9is de Nata at Manteigaria",
+          "description": "Famous pastry shop - don't miss the original custard tart.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "38.7076,-9.1359",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1591107576521-87091dc07797?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxwb3J0dWd1ZXNlJTIwcGFzdHJ5fGVufDB8fHx8MTc3ODUyODgxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Nick Fewings",
+          "photographer_url": "https://unsplash.com/@jannerboy62?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/odX7I9pFFTU/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxwb3J0dWd1ZXNlJTIwcGFzdHJ5fGVufDB8fHx8MTc3ODUyODgxM3ww"
+        },
+        {
+          "place_id": "fallback_miradouro_de_santa_catarina",
+          "name": "Miradouro de Santa Catarina",
+          "description": "Best viewpoint for sunset and the Tagus river.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "38.7063,-9.1430",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1650728070206-bac039934b6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjB2aWV3cG9pbnR8ZW58MHx8fHwxNzc4NTI4ODE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Jeroen den Otter",
+          "photographer_url": "https://unsplash.com/@jeroendenotter?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/Dq3cr3sQ_c0/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjB2aWV3cG9pbnR8ZW58MHx8fHwxNzc4NTI4ODE0fDA"
+        },
+        {
+          "place_id": "fallback_tram_28",
+          "name": "Tram 28",
+          "description": "Iconic yellow tram through the historic Alfama district.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "38.7126,-9.1310",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjB0cmFtfGVufDB8fHx8MTc3ODUyODgxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Aayush Gupta",
+          "photographer_url": "https://unsplash.com/@aayush_gupta?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/ljhCEaHYWJ8/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxsaXNib24lMjB0cmFtfGVufDB8fHx8MTc3ODUyODgxNHww"
+        },
+        {
+          "place_id": "fallback_caf\u00e9_majestic",
+          "name": "Caf\u00e9 Majestic",
+          "description": "Historic caf\u00e9 with Belle \u00c9poque elegance and great coffee.",
+          "rating": 4.5,
+          "user_ratings_total": 0,
+          "coordinates": "38.7095,-9.1420",
+          "address": "",
+          "types": [
+            "point_of_interest"
+          ],
+          "photo_url": "https://images.unsplash.com/photo-1778097925526-9fabea26df1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxwb3J0dWd1ZXNlJTIwY2FmZXxlbnwwfHx8fDE3Nzg1Mjg4MTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+          "photographer_name": "Milan Trninic",
+          "photographer_url": "https://unsplash.com/@wedesignmarbella?utm_source=GateAwayGenius&utm_medium=referral",
+          "unsplash_url": "https://unsplash.com/?utm_source=GateAwayGenius&utm_medium=referral",
+          "download_location": "https://api.unsplash.com/photos/i7-UcoRIQsI/download?ixid=M3w5NDYwMjB8MHwxfHNlYXJjaHwxfHxwb3J0dWd1ZXNlJTIwY2FmZXxlbnwwfHx8fDE3Nzg1Mjg4MTV8MA"
         }
       ],
       "immigration_buffer": 0,
       "safety_buffer_breakdown": {
         "disembark_and_immigration": 25,
-        "re-entry_security_amsterdam": 30,
+        "re-entry_security_lisbon": 20,
         "walk_to_gate": 10,
         "check-in_/_boarding_cutoff": 45
       },
@@ -526,8 +741,8 @@
           "minutes": 25
         },
         {
-          "label": "Re-entry security (Amsterdam)",
-          "minutes": 30
+          "label": "Re-entry security (Lisbon)",
+          "minutes": 20
         },
         {
           "label": "Walk to gate",

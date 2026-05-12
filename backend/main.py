@@ -50,9 +50,6 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
     - Polyline for map visualization
     """
     try:
-        if len(request.place_coordinates) != 3:
-            raise HTTPException(status_code=400, detail="Please select exactly 3 places")
-        
         # Calculate route using Google Maps
         route_data = await RouteService.calculate_multi_waypoint_route(
             airport_code=request.airport_code,
