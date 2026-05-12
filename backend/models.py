@@ -155,6 +155,14 @@ class PlannerOutput(BaseModel):
     safety_buffer_breakdown: Optional[List[Dict]] = None
 
 
+class PersonaPlacesRequest(BaseModel):
+    airport_code: str
+    persona_key: str
+    persona_label: str
+    persona_description: str
+    available_minutes: int
+
+
 class RouteLeg(BaseModel):
     """Single leg of a route (from one place to next)"""
     from_place: str  # Place name or "Airport"

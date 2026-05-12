@@ -1,18 +1,23 @@
 import { PlanPersona } from "@/api/client";
 
+const PERSONAS: PlanPersona[] = [
+  { key: "food_lover", label: "Food Lover", description: "Travels to discover local cuisine, cafés, markets, and memorable dining experiences." },
+  { key: "culture_seeker", label: "Culture Seeker", description: "Enjoys museums, history, traditions, architecture, and authentic local experiences." },
+  { key: "nature_wanderer", label: "Nature Wanderer", description: "Prefers outdoor adventures, scenic landscapes, and peaceful escapes in nature." },
+  { key: "checklist_traveler", label: "Checklist Traveler", description: "Focuses on visiting iconic landmarks and must-see attractions efficiently." },
+];
+
 const PERSONA_ICONS: Record<string, string> = {
-  coffee_lover: "☕",
+  food_lover: "🍜",
   culture_seeker: "🏛️",
-  fast_traveler: "⚡",
-  relaxed_discoverer: "🌿",
+  nature_wanderer: "🌿",
+  checklist_traveler: "✅",
 };
 
 export const PersonaSelector = ({
-  personas,
   selected,
   onSelect,
 }: {
-  personas: PlanPersona[];
   selected: string | null;
   onSelect: (key: string) => void;
 }) => {
@@ -24,7 +29,7 @@ export const PersonaSelector = ({
       <p className="mb-5 text-sm text-muted-foreground">Pick one — we'll tailor your plan.</p>
 
       <div className="grid grid-cols-2 gap-3">
-        {personas.map((persona) => {
+        {PERSONAS.map((persona) => {
           const isSelected = selected === persona.key;
           return (
             <button

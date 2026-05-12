@@ -10,8 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import httpx
 import config
-from models import PlannerInput, PlannerOutput, RouteResponse, PlaceOption
-from services.planner_service import generate_plan
+from models import PlannerInput, PlannerOutput, RouteResponse, PlaceOption, PersonaPlacesRequest
+from services.planner_service import generate_plan, get_persona_place_options
 from services.schiphol_api import SchipholService
 from services.route_service import RouteService
 from pydantic import BaseModel
@@ -140,6 +140,22 @@ async def create_plan(input_data: PlannerInput) -> PlannerOutput:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.post("/api/places-for-persona")
+async def places_for_persona(request: PersonaPlacesRequest) -> dict:
+    """Return Gemini-generated place suggestions tailored to a traveller persona."""
+    try:
+        places = await get_persona_place_options(
+            airport_code=request.airport_code,
+            persona_key=request.persona_key,
+            persona_label=request.persona_label,
+            persona_description=request.persona_description,
+            available_minutes=request.available_minutes,
+        )
+        return {"place_options": [p.model_dump() for p in places]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Persona places error: {str(e)}")
 
 
 @app.get("/api/airports")
