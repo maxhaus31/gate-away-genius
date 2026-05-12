@@ -245,6 +245,13 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         pier=outbound_raw.get("pier", ""),
     )
 
+    # ── Calculate city time (for place options filtering) ────────────────────
+    transport_to_city_min = airport_cfg.get("transport_to_city_min", 30)
+    city_time_minutes = max(0, usable_minutes - (transport_to_city_min * 2))
+
+    # ── Get place options ──────────────────────────────────────────────────────
+    place_options = await get_place_options_with_photos(input_data.airport_code, city_time_minutes)
+
     return PlannerOutput(
         flight_overview=FlightOverview(
             inbound=inbound_info,
@@ -261,6 +268,12 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         usable_minutes=usable_minutes,
         verdict=verdict,
         personas=PERSONAS,
+        place_options=place_options,
+        # Frontend expects these fields explicitly
+        total_minutes=layover_duration_minutes,
+        buffer_minutes=total_buffer_min,
+        city_time_minutes=city_time_minutes,
+        available_time_minutes=usable_minutes,
     )
 
 
