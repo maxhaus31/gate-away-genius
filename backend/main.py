@@ -10,9 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import httpx
 import config
-from models import PlannerInput, PlannerOutput
+from models import PlannerInput, PlannerOutput, RouteResponse, PlaceOption
 from services.planner_service import generate_plan
 from services.schiphol_api import SchipholService
+from services.route_service import RouteService
+from pydantic import BaseModel
+from typing import List
 
 app = FastAPI(title="GateAway Genius Backend", version="0.1.0")
 
@@ -26,10 +29,98 @@ app.add_middleware(
 )
 
 
+# Request model for route calculation
+class CalculateRouteRequest(BaseModel):
+    airport_code: str
+    place_ids: List[str]  # IDs of selected places
+    place_names: List[str]  # Names of selected places
+    place_coordinates: List[str]  # ["lat,lng", "lat,lng", "lat,lng"]
+    transport_mode: str = "transit"  # "transit" or "driving"
+    available_minutes: int  # Total available time for activities
+    time_per_place: int = 45  # Minutes to spend at each place
+
+
 @app.get("/health")
 def health_check():
     """Simple health check endpoint"""
     return {"status": "ok"}
+
+
+@app.post("/api/calculate-route")
+async def calculate_route(request: CalculateRouteRequest) -> dict:
+    """
+    Calculate multi-place route with detailed itinerary
+    
+    Takes selected places and returns:
+    - Route legs with travel times
+    - Detailed itinerary showing time at each place
+    - Total remaining time
+    - Polyline for map visualization
+    """
+    try:
+        # Calculate route using Google Maps
+        route_data = await RouteService.calculate_multi_waypoint_route(
+            airport_code=request.airport_code,
+            place_coordinates=request.place_coordinates,
+            place_names=request.place_names,
+            mode=request.transport_mode,
+        )
+        
+        if not route_data:
+            raise HTTPException(status_code=500, detail="Failed to calculate route")
+        
+        # Build detailed itinerary with timing
+        itinerary = []
+        cumulative_minutes = 0
+        
+        legs = route_data["legs"]
+        
+        for i, leg in enumerate(legs):
+            # Travel leg
+            travel_duration = leg["duration_minutes"]
+            itinerary.append({
+                "sequence": len(itinerary),
+                "type": "travel",
+                "from": leg["from_place"],
+                "to": leg["to_place"],
+                "duration_minutes": travel_duration,
+                "cumulative_minutes": cumulative_minutes + travel_duration,
+                "distance_meters": leg["distance_meters"],
+            })
+            cumulative_minutes += travel_duration
+            
+            # Activity leg (45 min at the place, if not at airport)
+            if "Airport" not in leg["to_place"] and i < len(legs) - 1:  # Not the return leg
+                itinerary.append({
+                    "sequence": len(itinerary),
+                    "type": "activity",
+                    "place": leg["to_place"],
+                    "duration_minutes": request.time_per_place,
+                    "cumulative_minutes": cumulative_minutes + request.time_per_place,
+                })
+                cumulative_minutes += request.time_per_place
+        
+        # Calculate remaining time
+        total_used_minutes = cumulative_minutes
+        remaining_minutes = request.available_minutes - total_used_minutes
+        
+        return {
+            "route": route_data,
+            "itinerary": itinerary,
+            "timing_summary": {
+                "total_travel_minutes": sum(leg["duration_minutes"] for leg in legs),
+                "total_activity_minutes": request.time_per_place * 3,  # 3 places
+                "total_used_minutes": total_used_minutes,
+                "available_minutes": request.available_minutes,
+                "remaining_minutes": max(0, remaining_minutes),
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Route calculation error: {str(e)}")
+
 
 
 @app.post("/api/plan")

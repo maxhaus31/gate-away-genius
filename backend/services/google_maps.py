@@ -17,7 +17,7 @@ class GoogleMapsService:
     # Airport coordinates for major hubs
     AIRPORT_COORDS = {
         "AMS": "52.3086,4.7639",      # Amsterdam Schiphol
-        "LIS": "38.6747,-9.2219",     # Lisbon
+        "LIS": "38.7813,-9.1359",     # Lisbon Humberto Delgado
         "SIN": "1.3644,103.9915",     # Singapore Changi
     }
     

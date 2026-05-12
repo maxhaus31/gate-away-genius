@@ -12,7 +12,7 @@ class PlacesService:
     
     # City center coordinates for major airports
     CITY_CENTERS = {
-        "LIS": "38.7223,-9.1393",      # Lisbon city center
+        "LIS": "38.7138,-9.1394",      # Lisbon downtown (Baixa)
         "AMS": "52.3676,4.9041",       # Amsterdam city center
         "SIN": "1.3521,103.8198",      # Singapore city center
     }

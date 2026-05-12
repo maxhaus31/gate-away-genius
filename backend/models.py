@@ -133,3 +133,63 @@ class AirportInfo(BaseModel):  # ACTIVITY PLANNING — not needed until Step 3
     walkToGateMin: int
     checkinCutoffMin: int
     vibe: str
+
+
+class BufferBreakdown(BaseModel):
+    """Breakdown of buffer time requirements"""
+    label: str
+    minutes: int
+
+
+class RouteLeg(BaseModel):
+    """Single leg of a route (from one place to next)"""
+    from_place: str  # Place name or "Airport"
+    to_place: str    # Destination place name or "Airport"
+    distance_meters: int
+    duration_minutes: int
+
+
+class RouteResponse(BaseModel):
+    """Response from route calculation endpoint"""
+    total_distance_meters: int
+    total_duration_minutes: int
+    legs: List[RouteLeg]  # Individual legs of the journey
+    polyline: Optional[str] = None  # Encoded polyline for map display
+    waypoints: List[dict]  # List of waypoint coordinates
+
+
+class ItineraryItem(BaseModel):
+    """Single item in the detailed itinerary"""
+    sequence: int
+    activity: str  # "Travel to", "Visit", "Travel back"
+    place_name: str
+    duration_minutes: int
+    cumulative_minutes: int
+    coordinates: Optional[str] = None
+
+
+class PlannerOutput(BaseModel):
+    """Complete layover plan response"""
+    # Verdict and messaging
+    verdict: str  # "safe", "tight", or "stay"
+    verdict_description: str  # Detailed message about the verdict
+    headline: str  # Short headline version
+    
+    # Timeline data
+    timeline: List[TimelineSegment]
+    activity_itinerary: ActivityItinerary  # Detailed step-by-step breakdown for visualization
+    
+    # Time breakdown
+    total_minutes: int  # Total layover time
+    buffer_minutes: int  # Total buffer required
+    usable_minutes: int  # Total minus buffer
+    available_time_minutes: int  # City time available (usable minus transport)
+    city_time_minutes: int  # Pure city time (available minus round-trip)
+    
+    # Airport and suggestions
+    airport: AirportInfo
+    suggestions: List[Suggestion]
+    place_options: List[PlaceOption]  # Suggested places user can select
+    immigration_buffer: int  # Immigration buffer based on passport region
+    safety_buffer_breakdown: dict  # Detailed breakdown of buffers
+    buffer_breakdown: List[BufferBreakdown]  # List of buffer items
