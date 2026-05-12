@@ -10,8 +10,9 @@ import { Suggestions } from "@/components/gateaway/Suggestions";
 import { RouteMap } from "@/components/gateaway/RouteMap";
 import { SimpleMap } from "@/components/gateaway/SimpleMap";
 import { DebugMap } from "@/components/gateaway/DebugMap";
+import { TravelTimesBreakdown } from "@/components/gateaway/TravelTimesBreakdown";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
-import { PlanResult as GDPlanResult, AirportCode, PassportRegion } from "@/lib/gateaway-data";
+import { PlanResult as GDPlanResult, AirportCode, PassportRegion, AIRPORTS } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -69,7 +70,19 @@ const Index = () => {
 
         const adaptedPlan: PlanResult = {
           ...response,
-          airport: { ...response.airport, code: response.airport.code as AirportCode },
+          airport: response.airport || {
+            code: airport as AirportCode,
+            city: AIRPORTS[airport].city,
+            name: AIRPORTS[airport].name,
+            country: AIRPORTS[airport].country,
+            flag: AIRPORTS[airport].flag,
+            transportToCityMin: 0,
+            transportLabel: "",
+            reentrySecurityMin: 0,
+            walkToGateMin: 0,
+            checkinCutoffMin: 0,
+            vibe: ""
+          },
           totalMinutes: response.total_minutes,
           bufferMinutes: response.buffer_minutes,
           cityTimeMinutes: response.city_time_minutes,
@@ -243,7 +256,7 @@ const Index = () => {
 
           {/* Route Map - appears after route is calculated */}
           {routeData && (
-            <div>
+            <div className="space-y-6">
               {calculatingRoute && (
                 <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 flex items-center justify-center gap-3">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -251,7 +264,12 @@ const Index = () => {
                 </div>
               )}
               {!calculatingRoute && (
-                <DebugMap routeData={routeData} airportCode={airport} />
+                <>
+                  <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
+                    <TravelTimesBreakdown routeData={routeData} />
+                  </div>
+                  <DebugMap routeData={routeData} airportCode={airport} />
+                </>
               )}
             </div>
           )}
@@ -281,14 +299,23 @@ const Index = () => {
           />
           )}
 
-          {/* Activity Itinerary Flowchart */}
-          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Your Journey</h2>
-            <TimelineFlowchart itinerary={plan.activity_itinerary} />
-          </div>
+          {/* Activity Itinerary Flowchart — only when timeline data available */}
+          {plan.activity_itinerary && (
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Your Journey</h2>
+              <TimelineFlowchart itinerary={plan.activity_itinerary} />
+            </div>
+          )}
 
-          <Timeline plan={plan} arrival={arrival} departure={departure} />
-          <Suggestions plan={plan} />
+          {/* Timeline — only when timeline data available */}
+          {plan.timeline && (
+            <Timeline plan={plan} arrival={arrival} departure={departure} />
+          )}
+
+          {/* Suggestions — only when suggestions data available */}
+          {plan.suggestions && (
+            <Suggestions plan={plan} />
+          )}
         </section>
       )}
 
