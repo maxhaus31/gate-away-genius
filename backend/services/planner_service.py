@@ -209,7 +209,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         security_reentry_min = airport_cfg["security_reentry_min_fallback"]
 
     walk_to_gate_min  = airport_cfg["walk_to_gate_min"]
-    checkin_cutoff_min = CHECKIN_CUTOFF_BY_PASSPORT.get(input_data.passport_type, 75)
+    checkin_cutoff_min = CHECKIN_CUTOFF_BY_PASSPORT.get(input_data.passport_region, 75)
     total_buffer_min  = exit_time_min + security_reentry_min + walk_to_gate_min + checkin_cutoff_min
 
     usable_minutes = max(0, layover_duration_minutes - total_buffer_min)

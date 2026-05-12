@@ -10,7 +10,7 @@ class PlannerInput(BaseModel):
     # Step 1 — three fields sent by the frontend
     inbound_flight: str    # e.g. "KL1234"
     outbound_flight: str   # e.g. "KL5678"
-    passport_type: str     # "EU", "US", or "OTHER"
+    passport_region: str   # "EU", "US", or "OTHER"
 
     # Not user-facing in Step 1; defaults to today inside SchipholService
     flight_date: Optional[str] = None  # "YYYY-MM-DD"
