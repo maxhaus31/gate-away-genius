@@ -196,6 +196,49 @@ Format: Return ONLY valid JSON array, nothing else."""
                 for p in places
             }
 
+    def generate_persona_places(
+        self,
+        airport_city: str,
+        persona_key: str,
+        persona_label: str,
+        persona_description: str,
+        available_minutes: int,
+    ) -> List[dict]:
+        """
+        Ask Gemini for 5 places in airport_city tailored to the traveller persona.
+
+        Returns list of dicts with: name, description, address, types, coordinates, search_query
+        """
+        prompt_text = f"""You are a travel expert recommending places for a layover traveller in {airport_city}.
+
+Traveller persona: "{persona_label}" — {persona_description}
+Available city time: {available_minutes} minutes
+
+Suggest exactly 5 real, specific places in {airport_city} that match this traveller's interests.
+Only include places the person can realistically visit during this layover.
+
+Return a JSON array. Each element must have exactly these fields:
+- name: the place name (string)
+- description: one vivid sentence about what makes it worth visiting (string)
+- address: street address or neighbourhood (string)
+- types: list of 1-2 category strings, e.g. ["restaurant"], ["museum", "historic_site"]
+- coordinates: "lat,lng" as a string with real GPS coordinates for this specific place
+- search_query: 2-3 word Unsplash photo search query for this place (e.g. "lisbon market", "amsterdam museum")
+
+Return ONLY valid JSON array, nothing else."""
+
+        try:
+            text = _call_gemini_with_fallback(prompt_text)
+            if "```json" in text:
+                text = text.split("```json")[1].split("```")[0].strip()
+            elif "```" in text:
+                text = text.split("```")[1].split("```")[0].strip()
+            places = json.loads(text)
+            return places[:5]
+        except Exception as e:
+            print(f"WARNING: Gemini persona places generation failed: {e}")
+            return []
+
     def _fallback_activities(self, airport_city: str) -> List[dict]:
         return [
             {

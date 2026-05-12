@@ -66,6 +66,12 @@ export interface PlaceOption {
   download_location?: string;  // Unsplash download tracking endpoint
 }
 
+export interface PlanPersona {
+  key: string;
+  label: string;
+  description: string;
+}
+
 export interface Activity {
   emoji: string;
   name: string;

@@ -133,24 +133,24 @@ SUGGESTIONS_CONFIG = {
 # Personas returned with every verdict — user selects one before Step 3
 PERSONAS: List[Persona] = [
     Persona(
-        key="coffee_lover",
-        label="Coffee Lover",
-        description="Great coffee shops and a comfortable spot to recharge between flights.",
+        key="food_lover",
+        label="Food Lover",
+        description="Travels to discover local cuisine, cafés, markets, and memorable dining experiences.",
     ),
     Persona(
         key="culture_seeker",
         label="Culture Seeker",
-        description="Museums, landmarks, and a taste of local history in the time available.",
+        description="Enjoys museums, history, traditions, architecture, and authentic local experiences.",
     ),
     Persona(
-        key="fast_traveler",
-        label="Fast Traveler",
-        description="Maximum sights in minimum time — efficient routes, no detours.",
+        key="nature_wanderer",
+        label="Nature Wanderer",
+        description="Prefers outdoor adventures, scenic landscapes, and peaceful escapes in nature.",
     ),
     Persona(
-        key="relaxed_discoverer",
-        label="Relaxed Discoverer",
-        description="A slower pace: markets, parks, and whatever looks interesting along the way.",
+        key="checklist_traveler",
+        label="Checklist Traveler",
+        description="Focuses on visiting iconic landmarks and must-see attractions efficiently.",
     ),
 ]
 
@@ -393,6 +393,63 @@ async def get_place_options_with_photos(airport_code: str, city_time_minutes: in
                 coordinates=place["coordinates"],  # Real coordinates
                 address="",
                 types=["point_of_interest"],
+            ))
+    return result
+
+
+async def get_persona_place_options(
+    airport_code: str,
+    persona_key: str,
+    persona_label: str,
+    persona_description: str,
+    available_minutes: int,
+) -> List[PlaceOption]:
+    """Fetch persona-tailored place suggestions via Gemini, with Unsplash photos."""
+    airport_cfg = AIRPORTS_CONFIG.get(airport_code, {})
+    airport_city = airport_cfg.get("city", airport_code)
+
+    gemini = GeminiActivityService()
+    raw_places = gemini.generate_persona_places(
+        airport_city=airport_city,
+        persona_key=persona_key,
+        persona_label=persona_label,
+        persona_description=persona_description,
+        available_minutes=available_minutes,
+    )
+
+    result = []
+    for place in raw_places:
+        name = place.get("name", "")
+        search_query = place.get("search_query", name)
+        photos = await UnsplashService.search_photos(query=search_query, per_page=1)
+        place_id = f"{persona_key}_{name.replace(' ', '_').lower()}"
+        if photos:
+            photo = photos[0]
+            result.append(PlaceOption(
+                place_id=place_id,
+                name=name,
+                description=place.get("description", ""),
+                rating=4.5,
+                user_ratings_total=0,
+                coordinates=place.get("coordinates", ""),
+                address=place.get("address", ""),
+                types=place.get("types", ["point_of_interest"]),
+                photo_url=photo["url"],
+                photographer_name=photo["photographer"],
+                photographer_url=photo["photographer_url"],
+                unsplash_url=photo["unsplash_url"],
+                download_location=photo["download_location"],
+            ))
+        else:
+            result.append(PlaceOption(
+                place_id=place_id,
+                name=name,
+                description=place.get("description", ""),
+                rating=4.5,
+                user_ratings_total=0,
+                coordinates=place.get("coordinates", ""),
+                address=place.get("address", ""),
+                types=place.get("types", ["point_of_interest"]),
             ))
     return result
 
