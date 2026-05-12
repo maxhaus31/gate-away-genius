@@ -9,6 +9,7 @@ import { MyPlan } from "@/components/gateaway/MyPlan";
 import { Suggestions } from "@/components/gateaway/Suggestions";
 import { RouteMap } from "@/components/gateaway/RouteMap";
 import { SimpleMap } from "@/components/gateaway/SimpleMap";
+import { DebugMap } from "@/components/gateaway/DebugMap";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -246,7 +247,7 @@ const Index = () => {
                 </div>
               )}
               {!calculatingRoute && (
-                <SimpleMap routeData={routeData} airportCode={airport} />
+                <DebugMap routeData={routeData} airportCode={airport} />
               )}
             </div>
           )}

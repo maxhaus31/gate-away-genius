@@ -17,7 +17,7 @@ class RouteService:
     # Airport coordinates
     AIRPORT_COORDS = {
         "AMS": {"lat": 52.3086, "lng": 4.7639},
-        "LIS": {"lat": 38.6813, "lng": -9.2267},
+        "LIS": {"lat": 38.7813, "lng": -9.1359},
         "SIN": {"lat": 1.3644, "lng": 103.9915},
     }
     

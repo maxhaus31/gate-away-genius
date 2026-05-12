@@ -200,7 +200,7 @@ async def get_place_options_with_photos(airport_code: str, city_time_minutes: in
         "LIS": [
             {"name": "Praça do Comércio", "description": "Historic riverside plaza with stunning views.", "search_query": "lisbon plaza", "coordinates": "38.7072,-9.1370"},
             {"name": "Pastéis de Nata at Manteigaria", "description": "Famous pastry shop - don't miss the original custard tart.", "search_query": "portuguese pastry", "coordinates": "38.7076,-9.1359"},
-            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint", "coordinates": "38.7063,-9.1430"},
+            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint", "coordinates": "38.7097,-9.1477"},
             {"name": "Tram 28", "description": "Iconic yellow tram through the historic Alfama district.", "search_query": "lisbon tram", "coordinates": "38.7126,-9.1310"},
             {"name": "Café Majestic", "description": "Historic café with Belle Époque elegance and great coffee.", "search_query": "portuguese cafe", "coordinates": "38.7095,-9.1420"},
         ],
