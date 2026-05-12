@@ -18,15 +18,17 @@ from config import SCHIPHOL_APP_ID, SCHIPHOL_APP_KEY
 def _mock_flight_data() -> Dict[str, Any]:
     today = datetime.now().strftime("%Y-%m-%d")
     return {
-        "flight_name": "MOCK",
-        "scheduled_arrival": f"{today}T10:30:00+02:00",
+        "flight_number":       "MOCK",
+        "date":                today,
+        "scheduled_arrival":   f"{today}T10:30:00+02:00",
         "scheduled_departure": f"{today}T14:00:00+02:00",
-        "terminal": "D",
-        "pier": "D",
-        "gate": "D7",
-        "delay_minutes": 0,
-        "status": "scheduled",
-        "is_mock": True,
+        "actual_arrival":      None,   # not available for scheduled/future flights
+        "terminal":            "D",
+        "pier":                "D",
+        "gate":                "D7",
+        "delay_minutes":       0,
+        "status":              "scheduled",
+        "is_mock":             True,
     }
 
 MOCK_QUEUE_DATA: Dict[str, Any] = {
@@ -77,16 +79,20 @@ class SchipholService:
         status      = states[0].lower() if states else "scheduled"
 
         direction = raw.get("flightDirection", "")
+        date      = scheduled[:10] if scheduled else ""  # "YYYY-MM-DD"
+
         return {
-            "flight_name":          raw.get("flightName", ""),
-            "scheduled_arrival":    scheduled if direction == "A" else "",
-            "scheduled_departure":  scheduled if direction == "D" else "",
-            "terminal":             str(raw.get("terminal", "")),
-            "pier":                 raw.get("pier", ""),
-            "gate":                 raw.get("gate", ""),
-            "delay_minutes":        SchipholService._delay_minutes(scheduled, actual_land),
-            "status":               status,
-            "is_mock":              False,
+            "flight_number":       raw.get("flightName", ""),
+            "date":                date,
+            "scheduled_arrival":   scheduled if direction == "A" else "",
+            "scheduled_departure": scheduled if direction == "D" else "",
+            "actual_arrival":      actual_land if direction == "A" else None,
+            "terminal":            str(raw.get("terminal", "")),
+            "pier":                raw.get("pier", ""),
+            "gate":                raw.get("gate", ""),
+            "delay_minutes":       SchipholService._delay_minutes(scheduled, actual_land),
+            "status":              status,
+            "is_mock":             False,
         }
 
     @staticmethod
