@@ -132,7 +132,7 @@ async def extract_flights(file: UploadFile = File(...)):
             text = "".join(page.get_text() for page in doc)
             flight_numbers = list(dict.fromkeys(FLIGHT_RE.findall(text.upper())))
         except Exception as e:
-            print(f"⚠️ PyMuPDF extraction failed: {e}")
+            print(f"WARNING: PyMuPDF extraction failed: {e}")
 
     # ── Step 2: Gemini Vision fallback ────────────────────────────────────────
     if len(flight_numbers) < 2:
@@ -183,7 +183,7 @@ async def extract_flights(file: UploadFile = File(...)):
                 "outbound_flight": parsed.get("outbound_flight"),
             }
         except Exception as e:
-            print(f"⚠️ Gemini Vision extraction failed: {e}")
+            print(f"WARNING: Gemini Vision extraction failed: {e}")
             raise HTTPException(
                 status_code=422,
                 detail=f"Could not extract flight numbers from file: {e}",

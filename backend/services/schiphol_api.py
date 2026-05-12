@@ -107,7 +107,7 @@ class SchipholService:
             Parsed flight dict, or MOCK_FLIGHT_DATA if unavailable.
         """
         if not SchipholService._is_configured():
-            print("⚠️  Schiphol credentials not configured — using mock flight data")
+            print("WARNING:  Schiphol credentials not configured — using mock flight data")
             return _mock_flight_data()
 
         schedule_date = date or datetime.now().strftime("%Y-%m-%d")
@@ -127,17 +127,17 @@ class SchipholService:
                 flights = response.json().get("flights", [])
 
         except httpx.TimeoutException:
-            print(f"⏱️  Schiphol API timeout for {flight_name} — using mock data")
+            print(f"TIMEOUT:  Schiphol API timeout for {flight_name} — using mock data")
             return _mock_flight_data()
         except httpx.HTTPStatusError as e:
-            print(f"❌  Schiphol API {e.response.status_code} for {flight_name} — using mock data")
+            print(f"ERROR:  Schiphol API {e.response.status_code} for {flight_name} — using mock data")
             return _mock_flight_data()
         except Exception as e:
-            print(f"❌  Schiphol API error: {e} — using mock data")
+            print(f"ERROR:  Schiphol API error: {e} — using mock data")
             return _mock_flight_data()
 
         if not flights:
-            print(f"⚠️  Flight {flight_name} not found on {schedule_date} — using mock data")
+            print(f"WARNING:  Flight {flight_name} not found on {schedule_date} — using mock data")
             return _mock_flight_data()
 
         return SchipholService._parse_flight(flights[0])
@@ -155,7 +155,7 @@ class SchipholService:
             Dict with terminal and queue_minutes, or MOCK_QUEUE_DATA if unavailable.
         """
         if not SchipholService._is_configured():
-            print("⚠️  Schiphol credentials not configured — using mock queue data")
+            print("WARNING:  Schiphol credentials not configured — using mock queue data")
             return MOCK_QUEUE_DATA
 
         try:
@@ -169,13 +169,13 @@ class SchipholService:
                 queues = response.json().get("queues", [])
 
         except httpx.TimeoutException:
-            print("⏱️  Schiphol queue API timeout — using mock data")
+            print("TIMEOUT:  Schiphol queue API timeout — using mock data")
             return MOCK_QUEUE_DATA
         except httpx.HTTPStatusError as e:
-            print(f"❌  Schiphol queue API {e.response.status_code} — using mock data")
+            print(f"ERROR:  Schiphol queue API {e.response.status_code} — using mock data")
             return MOCK_QUEUE_DATA
         except Exception as e:
-            print(f"❌  Schiphol queue API error: {e} — using mock data")
+            print(f"ERROR:  Schiphol queue API error: {e} — using mock data")
             return MOCK_QUEUE_DATA
 
         if not queues:

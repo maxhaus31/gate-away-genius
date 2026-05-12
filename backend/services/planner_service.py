@@ -311,7 +311,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     )
     cached = cache_service.get(cache_key)
     if cached:
-        print(f"✅ Cache hit [{cache_key}]")
+        print(f"OK: Cache hit [{cache_key}]")
         return PlannerOutput(**cached)
 
     # Calculate total available time
@@ -361,7 +361,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         )
         
         if places:
-            print(f"🏆 Found {len(places)} top places to visit")
+            print(f"INFO: Found {len(places)} top places to visit")
             
             # Check if we can reach these places within available time
             maps_call_count = 0
@@ -375,7 +375,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                     )
                     maps_call_count += 1
                 else:
-                    print(f"⚠️ Google Maps API limit reached")
+                    print(f"WARNING: Google Maps API limit reached")
                     round_trip_minutes = None
                 
                 # If we can't calculate real time, estimate it
@@ -396,7 +396,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                         photo_url=place.get("photo_url"),
                     ))
             
-            print(f"✅ {len(place_options)} places are reachable")
+            print(f"OK: {len(place_options)} places are reachable")
             
             # Build suggestions from top places
             if place_options:
@@ -410,11 +410,11 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                     for p in place_options[:3]
                 ]
         else:
-            print("⚠️ No places found via Places API, using Gemini fallback")
+            print("WARNING: No places found via Places API, using Gemini fallback")
             raise Exception("Places API returned no results")
     
     except Exception as e:
-        print(f"⚠️ Places API unavailable: {e}. Using Gemini activity generation.")
+        print(f"WARNING: Places API unavailable: {e}. Using Gemini activity generation.")
         place_options = []
         
         # Fallback to Gemini-based activity generation
@@ -427,7 +427,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                 airport_iata=input_data.airport_code,
             )
             
-            print(f"✈️ Got {len(gemini_activities)} activity suggestions from Gemini")
+            print(f"INFO: Got {len(gemini_activities)} activity suggestions from Gemini")
             
             # Validate activities with Google Maps - get real transit times
             maps_call_count = 0
@@ -446,11 +446,11 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                     )
                     maps_call_count += 1
                 else:
-                    print(f"⚠️ Google Maps API limit ({MAX_GOOGLE_MAPS_CALLS}) reached")
+                    print(f"WARNING: Google Maps API limit ({MAX_GOOGLE_MAPS_CALLS}) reached")
                 
                 # If Google Maps call failed or skipped, use Gemini's time estimate
                 if round_trip_minutes is None:
-                    print(f"⚠️ Could not verify travel time for {activity['title']}, using Gemini estimate")
+                    print(f"WARNING: Could not verify travel time for {activity['title']}, using Gemini estimate")
                     round_trip_minutes = activity.get("minTimeNeeded", 60)
                 
                 # Check if activity is reachable
@@ -465,7 +465,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                         "coordinates": coords,
                     })
             
-            print(f"✅ {len(reachable_activities)} activities are reachable")
+            print(f"OK: {len(reachable_activities)} activities are reachable")
             
             # Build suggestions from reachable activities
             if reachable_activities:
@@ -482,12 +482,12 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
                 suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
         
         except Exception as gemini_error:
-            print(f"⚠️ Gemini also failed: {gemini_error}")
+            print(f"WARNING: Gemini also failed: {gemini_error}")
             suggestions_list = get_suggestions_for_city_time(input_data.airport_code, city_time_minutes)
     
     # If place_options is still empty, use fallback with photos
     if not place_options:
-        print(f"📸 Using fallback places with photos from Unsplash")
+        print(f"INFO: Using fallback places with photos from Unsplash")
         place_options = await get_place_options_with_photos(input_data.airport_code, city_time_minutes)
     
     # Generate witty verdict copy from Gemini
@@ -506,7 +506,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
             activities=activities_for_verdict,
         )
     except Exception as e:
-        print(f"⚠️ Gemini copy generation failed: {e}")
+        print(f"WARNING: Gemini copy generation failed: {e}")
         headline = _fallback_headline(verdict, city_time_minutes, airport_config["city"])
     
     # Create verdict message
@@ -596,7 +596,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     itinerary_steps.append(
         ActivityStep(
             type="airport",
-            emoji="✈️",
+            emoji="INFO:",
             title=f"{airport_config['name']} (Arrive)",
             duration_minutes=25 + immigration_buffer,
         )
@@ -679,7 +679,7 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     )
 
     cache_service.set(cache_key, result.model_dump())
-    print(f"💾 Cached result [{cache_key}]")
+    print(f"CACHE: Cached result [{cache_key}]")
     return result
 
 
