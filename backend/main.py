@@ -1,6 +1,14 @@
-from fastapi import FastAPI, HTTPException
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
+import re
+import base64
+import json
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import httpx
 import config
 from models import PlannerInput, PlannerOutput
 from services.planner_service import generate_plan
@@ -93,6 +101,98 @@ async def lookup_flight(flight_number: str, date: str = None):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error looking up flight: {str(e)}")
+
+
+FLIGHT_RE = re.compile(r"\b([A-Z]{2}\d{3,4})\b")
+
+
+@app.post("/api/extract-flights")
+async def extract_flights(file: UploadFile = File(...)):
+    """
+    Extract inbound and outbound flight numbers from a boarding pass image or PDF.
+
+    Step 1 (PDF only): PyMuPDF pulls plain text; regex finds [A-Z]{2}\\d{3,4} matches.
+    Step 2 (fallback): If fewer than 2 matches, send the file to Gemini Vision and parse
+                       its structured JSON response.
+
+    Returns { inbound_flight, outbound_flight } — either value may be null.
+    """
+    contents = await file.read()
+    filename = (file.filename or "").lower()
+    content_type = (file.content_type or "").lower()
+    is_pdf = content_type == "application/pdf" or filename.endswith(".pdf")
+
+    flight_numbers: list = []
+
+    # ── Step 1: text extraction for PDFs ──────────────────────────────────────
+    if is_pdf:
+        try:
+            import fitz  # PyMuPDF
+            doc = fitz.open(stream=contents, filetype="pdf")
+            text = "".join(page.get_text() for page in doc)
+            flight_numbers = list(dict.fromkeys(FLIGHT_RE.findall(text.upper())))
+        except Exception as e:
+            print(f"⚠️ PyMuPDF extraction failed: {e}")
+
+    # ── Step 2: Gemini Vision fallback ────────────────────────────────────────
+    if len(flight_numbers) < 2:
+        try:
+            if is_pdf:
+                import fitz  # PyMuPDF
+                doc = fitz.open(stream=contents, filetype="pdf")
+                pix = doc[0].get_pixmap(dpi=150)
+                image_bytes = pix.tobytes("png")
+                mime_type = "image/png"
+            else:
+                image_bytes = contents
+                mime_type = content_type or "image/jpeg"
+
+            b64_data = base64.b64encode(image_bytes).decode()
+            prompt = (
+                "This is a boarding pass or flight confirmation document. "
+                "Find all flight numbers (2 uppercase letters followed by 3 or 4 digits, "
+                "e.g. KL1234 or TP835). "
+                'Return ONLY a JSON object: {"inbound_flight": "XX1234", "outbound_flight": "XX5678"}. '
+                "Set a value to null if not visible."
+            )
+            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {"inline_data": {"mime_type": mime_type, "data": b64_data}},
+                        {"text": prompt},
+                    ]
+                }]
+            }
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    url,
+                    params={"key": config.GOOGLE_GEMINI_API_KEY},
+                    json=payload,
+                    timeout=30,
+                )
+                resp.raise_for_status()
+            raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0].strip()
+            parsed = json.loads(raw)
+            return {
+                "inbound_flight": parsed.get("inbound_flight"),
+                "outbound_flight": parsed.get("outbound_flight"),
+            }
+        except Exception as e:
+            print(f"⚠️ Gemini Vision extraction failed: {e}")
+            raise HTTPException(
+                status_code=422,
+                detail=f"Could not extract flight numbers from file: {e}",
+            )
+
+    return {
+        "inbound_flight": flight_numbers[0] if len(flight_numbers) > 0 else None,
+        "outbound_flight": flight_numbers[1] if len(flight_numbers) > 1 else None,
+    }
 
 
 if __name__ == "__main__":

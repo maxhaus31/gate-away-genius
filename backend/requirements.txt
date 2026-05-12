@@ -8,3 +8,6 @@ langchain>=0.1.0
 langchain-google-genai>=0.0.11
 aiohttp
 requests
+python-multipart>=0.0.6
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
