@@ -206,26 +206,67 @@ Format: Return ONLY valid JSON array, nothing else."""
     ) -> List[dict]:
         """
         Ask Gemini for 5 places in airport_city tailored to the traveller persona.
-
         Returns list of dicts with: name, description, address, types, coordinates, search_query
         """
-        prompt_text = f"""You are a travel expert recommending places for a layover traveller in {airport_city}.
+        persona_guidelines = {
+            "food_lover": (
+                "Focus on iconic local food markets, celebrated local restaurants, "
+                "historic cafés, street food scenes, and neighbourhood spots known for "
+                "authentic regional cuisine. NO chains, fast food, or generic coffee shops."
+            ),
+            "culture_seeker": (
+                "Focus on world-class museums, UNESCO heritage sites, famous historic "
+                "landmarks, architectural icons, and neighbourhoods with deep cultural "
+                "character. Prioritise places with strong storytelling and local identity."
+            ),
+            "nature_wanderer": (
+                "Focus on iconic parks, scenic viewpoints, waterfronts, botanical gardens, "
+                "nature reserves, and outdoor escapes with memorable landscapes. "
+                "Prioritise places known for their beauty and peaceful atmosphere."
+            ),
+            "checklist_traveler": (
+                "Focus on the city's most famous and universally recognised landmarks, "
+                "must-see squares, iconic monuments, and top-rated attractions that "
+                "every visitor talks about. These should be the 'I was there' moments."
+            ),
+        }
+
+        persona_hint = persona_guidelines.get(
+            persona_key,
+            "Focus on places that are genuinely special, well-known, and memorable."
+        )
+
+        prompt_text = f"""You are an expert local travel guide recommending layover stops in {airport_city}.
 
 Traveller persona: "{persona_label}" — {persona_description}
 Available city time: {available_minutes} minutes
 
-Suggest exactly 5 real, specific places in {airport_city} that match this traveller's interests.
-Only include places the person can realistically visit during this layover.
+Your goal: Suggest exactly 5 real, specific, well-known places in {airport_city} that this traveller will remember.
+
+Persona focus: {persona_hint}
+
+Hard rules — a place MUST be excluded if it is any of the following:
+- A supermarket, grocery store, or convenience store
+- A fast food chain (McDonald's, KFC, Burger King, Subway, etc.)
+- A global coffee chain (Starbucks, Costa, etc.)
+- A shopping mall or generic retail chain
+- A place chosen purely for high ratings but with no special local character
+
+A great recommendation is:
+- Famous or iconic within the city (locals and tourists alike know it)
+- Genuinely tied to the city's identity, history, culture, food scene, or landscape
+- Realistic to visit in {available_minutes} minutes from the city centre
+- Something that feels special and memorable, not interchangeable with any other city
 
 Return a JSON array. Each element must have exactly these fields:
 - name: the place name (string)
-- description: one vivid sentence about what makes it worth visiting (string)
+- description: one vivid sentence capturing why this place is unmissable (string)
 - address: street address or neighbourhood (string)
 - types: list of 1-2 category strings, e.g. ["restaurant"], ["museum", "historic_site"]
 - coordinates: "lat,lng" as a string with real GPS coordinates for this specific place
-- search_query: 2-3 word Unsplash photo search query for this place (e.g. "lisbon market", "amsterdam museum")
+- search_query: 2-3 word Unsplash photo search query for this place (e.g. "lisbon market", "amsterdam canal")
 
-Return ONLY valid JSON array, nothing else."""
+Return ONLY a valid JSON array, nothing else."""
 
         try:
             text = _call_gemini_with_fallback(prompt_text)
