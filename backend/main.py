@@ -16,9 +16,12 @@ from services.schiphol_api import SchipholService
 from services.aerodatabox_api import AeroDataBoxService
 from services.route_service import RouteService
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+import database
 
 app = FastAPI(title="GateAway Genius Backend", version="0.1.0")
+
+database.init_db()
 
 # CORS: Allow frontend to call this backend
 app.add_middleware(
@@ -313,6 +316,22 @@ async def extract_flights(file: UploadFile = File(...)):
         "inbound_flight": flight_numbers[0] if len(flight_numbers) > 0 else None,
         "outbound_flight": flight_numbers[1] if len(flight_numbers) > 1 else None,
     }
+
+
+class FeedbackRequest(BaseModel):
+    rating: Optional[int] = None
+    email: Optional[str] = None
+    message: Optional[str] = None
+
+
+@app.post("/api/feedback")
+async def submit_feedback(body: FeedbackRequest):
+    """Save user feedback (star rating, email, free-text) to the local SQLite database."""
+    try:
+        row_id = database.insert_feedback(body.rating, body.email, body.message)
+        return {"ok": True, "id": row_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save feedback: {str(e)}")
 
 
 if __name__ == "__main__":
