@@ -10,14 +10,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
  * Request types (matches backend models.py)
  */
 export interface PlannerInput {
-  // Flight numbers are the only time inputs — backend resolves datetimes via Schiphol
-  inbound_flight: string;   // arriving flight,  e.g. "KL1234"
-  outbound_flight: string;  // departing flight, e.g. "KL5678"
-  flight_date?: string;     // "YYYY-MM-DD"; forwarded to Schiphol query only, defaults to today
-
-  // Always required
-  airport_code: string;    // "LIS", "AMS", "SIN"
-  passport_region: string; // "EU", "US", "OTHER"
+  inbound_flight:  string;  // arriving flight,  e.g. "KL1234"
+  outbound_flight: string;  // departing flight, e.g. "TP1835"
+  inbound_date?:   string;  // "YYYY-MM-DD"; defaults to today on backend
+  outbound_date?:  string;  // "YYYY-MM-DD"; defaults to today on backend
+  layover_airport: string;  // "AMS" | "LIS" | "SIN"
+  passport_type:   string;  // "EU" | "US" | "OTHER"
   transport_mode?: "transit" | "driving";
 }
 
@@ -79,9 +77,13 @@ export interface FlightInfo {
 }
 
 export interface PlanFlightOverview {
-  inbound: FlightInfo;
-  outbound: FlightInfo;
-  layover_duration_minutes: number;
+  inbound:                   FlightInfo;
+  outbound:                  FlightInfo;
+  total_layover_minutes:     number;
+  airport_buffer_minutes:    number;
+  security_reentry_minutes:  number;
+  transport_minutes:         number;
+  city_time_minutes:         number;
 }
 
 export interface PlanPersona {
@@ -112,27 +114,24 @@ export interface AirportInfo {
 }
 
 export interface PlanResponse {
-  verdict: "safe" | "tight" | "stay";
-  verdict_description: string;
-  headline: string;
-  timeline: TimelineSegment[];
-  activity_itinerary: ActivityItinerary;
-  available_time_minutes: number;
-  city_time_minutes: number;
-  total_minutes: number;
-  buffer_minutes: number;
-  usable_minutes: number;
-  airport: AirportInfo;
-  immigration_buffer: number;
-  suggestions: Array<{
+  flight_overview:          PlanFlightOverview;
+  verdict:                  "safe" | "tight" | "not_possible";
+  verdict_description?:     string;
+  headline?:                string;
+  timeline?:                TimelineSegment[];
+  activity_itinerary?:      ActivityItinerary;
+  available_time_minutes?:  number;
+  usable_minutes?:          number;
+  airport?:                 AirportInfo;
+  suggestions?:             Array<{
     emoji: string;
     title: string;
     blurb: string;
     minTimeNeeded: number;
   }>;
-  place_options: PlaceOption[];
-  safety_buffer_breakdown: Record<string, number>;
-  buffer_breakdown: Array<{
+  place_options?:           PlaceOption[];
+  safety_buffer_breakdown?: Record<string, number>;
+  buffer_breakdown?:        Array<{
     label: string;
     minutes: number;
   }>;

@@ -17,12 +17,17 @@ function formatDate(iso: string) {
   });
 }
 
+function formatTime(iso: string) {
+  // Handles both "2026-05-14T10:30:00+01:00" and "2026-05-14 10:30:00+01:00"
+  return iso.replace(" ", "T").slice(11, 16);
+}
+
 function statusLabel(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export const FlightOverview = ({ overview }: { overview: PlanFlightOverview }) => {
-  const { inbound, outbound, layover_duration_minutes } = overview;
+  const { inbound, outbound, total_layover_minutes } = overview;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
@@ -55,31 +60,40 @@ export const FlightOverview = ({ overview }: { overview: PlanFlightOverview }) =
           <div className="space-y-1 text-sm">
             {inbound.scheduled_arrival && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Scheduled</span>
-                <span className="font-medium tabular-nums">{inbound.scheduled_arrival}</span>
+                <span className="text-muted-foreground">Scheduled arrival</span>
+                <span className="font-medium tabular-nums">{formatTime(inbound.scheduled_arrival)}</span>
               </div>
             )}
-            {inbound.actual_arrival && inbound.actual_arrival !== inbound.scheduled_arrival && (
+            {inbound.actual_arrival && inbound.actual_arrival !== inbound.scheduled_arrival ? (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Actual</span>
+                <span className="text-muted-foreground">Effective arrival</span>
                 <span
                   className={`font-medium tabular-nums ${
-                    (inbound.delay_minutes ?? 0) > 0 ? "text-warning-foreground" : ""
+                    (inbound.delay_minutes ?? 0) > 0 ? "text-warning-foreground" : "text-primary"
                   }`}
                 >
-                  {inbound.actual_arrival}
+                  {formatTime(inbound.actual_arrival)}
                   {(inbound.delay_minutes ?? 0) > 0 && (
                     <span className="ml-1 text-xs">(+{inbound.delay_minutes}m)</span>
                   )}
                 </span>
               </div>
+            ) : inbound.scheduled_arrival ? (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Effective arrival</span>
+                <span className="font-medium tabular-nums text-primary">
+                  {formatTime(inbound.scheduled_arrival)}
+                </span>
+              </div>
+            ) : null}
+            {(inbound.terminal || inbound.pier) && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Terminal / Pier</span>
+                <span className="font-medium">
+                  {inbound.terminal}{inbound.pier ? ` · ${inbound.pier}` : ""}
+                </span>
+              </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Terminal / Pier</span>
-              <span className="font-medium">
-                {inbound.terminal} · {inbound.pier}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -107,16 +121,20 @@ export const FlightOverview = ({ overview }: { overview: PlanFlightOverview }) =
           <div className="space-y-1 text-sm">
             {outbound.scheduled_departure && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Scheduled</span>
-                <span className="font-medium tabular-nums">{outbound.scheduled_departure}</span>
+                <span className="text-muted-foreground">Scheduled departure</span>
+                <span className="font-medium tabular-nums text-primary">
+                  {formatTime(outbound.scheduled_departure)}
+                </span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Terminal / Pier</span>
-              <span className="font-medium">
-                {outbound.terminal} · {outbound.pier}
-              </span>
-            </div>
+            {(outbound.terminal || outbound.pier) && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Terminal / Pier</span>
+                <span className="font-medium">
+                  {outbound.terminal}{outbound.pier ? ` · ${outbound.pier}` : ""}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +143,7 @@ export const FlightOverview = ({ overview }: { overview: PlanFlightOverview }) =
       <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/40 py-3">
         <span className="text-sm text-muted-foreground">Total layover</span>
         <span className="text-sm font-semibold text-foreground">
-          {formatDuration(layover_duration_minutes)}
+          {formatDuration(total_layover_minutes)}
         </span>
       </div>
     </div>

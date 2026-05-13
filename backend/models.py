@@ -7,21 +7,13 @@ from typing import Optional, List, Dict
 # ---------------------------------------------------------------------------
 
 class PlannerInput(BaseModel):
-    # Step 1 — three fields sent by the frontend
-    inbound_flight: str    # e.g. "KL1234"
-    outbound_flight: str   # e.g. "KL5678"
-    passport_region: str   # "EU", "US", or "OTHER"
-
-    # Not user-facing in Step 1; defaults to today inside SchipholService
-    flight_date: Optional[str] = None  # "YYYY-MM-DD"
-
-    # Not user-facing in Step 1; needed internally for buffer lookup.
-    # Will become a required user field when multi-airport support is introduced.
-    airport_code: str = "AMS"  # "AMS", "LIS", "SIN"
-
-    # ACTIVITY PLANNING — transport_mode is not part of Step 1 user input.
-    # It may be needed in Step 3 for Google Maps distance calculations.
-    transport_mode: str = "transit"  # "transit" or "driving"
+    inbound_flight:  str              # e.g. "KL1234"
+    outbound_flight: str              # e.g. "TP1835"
+    inbound_date:    Optional[str] = None   # "YYYY-MM-DD"; defaults to today
+    outbound_date:   Optional[str] = None   # "YYYY-MM-DD"; defaults to today
+    layover_airport: str = "AMS"      # "AMS" | "LIS" | "SIN"
+    passport_type:   str = "EU"       # "EU" | "US" | "OTHER"
+    transport_mode:  str = "transit"  # kept for Step 3 route calculation
 
 
 # ---------------------------------------------------------------------------
@@ -49,9 +41,13 @@ class OutboundFlightInfo(BaseModel):
 
 
 class FlightOverview(BaseModel):
-    inbound: InboundFlightInfo
-    outbound: OutboundFlightInfo
-    layover_duration_minutes: int      # outbound departure − inbound actual/estimated arrival
+    inbound:                   InboundFlightInfo
+    outbound:                  OutboundFlightInfo
+    total_layover_minutes:     int  # outbound departure − inbound actual/estimated arrival
+    airport_buffer_minutes:    int  # exit + security + walk + check-in cutoff
+    security_reentry_minutes:  int  # security queue component of the buffer
+    transport_minutes:         int  # round-trip transport to city (transport_to_city × 2)
+    city_time_minutes:         int  # total_layover − buffer − transport
 
 
 class BufferBreakdown(BaseModel):
@@ -132,26 +128,24 @@ class AirportInfo(BaseModel):
 # ---------------------------------------------------------------------------
 
 class PlannerOutput(BaseModel):
-    # Step 1 — required fields (always present)
-    flight_overview: FlightOverview
-    buffer_breakdown: BufferBreakdown
-    usable_minutes: int
-    verdict: str        # "safe" | "tight" | "not_possible"
-    personas: List[Persona]
-    
-    # Step 3 — optional fields (populated after place selection)
-    verdict_description: Optional[str] = None
-    headline: Optional[str] = None
-    timeline: Optional[List[TimelineSegment]] = None
-    activity_itinerary: Optional[ActivityItinerary] = None
-    total_minutes: Optional[int] = None
-    buffer_minutes: Optional[int] = None
-    available_time_minutes: Optional[int] = None
-    city_time_minutes: Optional[int] = None
-    airport: Optional[AirportInfo] = None
-    suggestions: Optional[List[Suggestion]] = None
-    place_options: Optional[List[PlaceOption]] = None
-    immigration_buffer: Optional[int] = None
+    # Step 1 — always present
+    flight_overview:  FlightOverview
+    verdict:          str           # "safe" | "tight" | "not_possible"
+    personas:         List[Persona]
+
+    # Step 1 detail (buffer breakdown kept for tooltip display)
+    buffer_breakdown:        Optional[BufferBreakdown] = None
+    usable_minutes:          Optional[int] = None
+
+    # Step 3 — optional fields
+    verdict_description:     Optional[str] = None
+    headline:                Optional[str] = None
+    timeline:                Optional[List[TimelineSegment]] = None
+    activity_itinerary:      Optional[ActivityItinerary] = None
+    available_time_minutes:  Optional[int] = None
+    airport:                 Optional[AirportInfo] = None
+    suggestions:             Optional[List[Suggestion]] = None
+    place_options:           Optional[List[PlaceOption]] = None
     safety_buffer_breakdown: Optional[List[Dict]] = None
 
 

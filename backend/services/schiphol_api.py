@@ -3,6 +3,7 @@ Schiphol API Service: Fetch real flight info and security queue times
 from the Schiphol Public Flights API.
 """
 
+import re
 import httpx
 from datetime import datetime
 from typing import Optional, Dict, Any
@@ -119,18 +120,28 @@ class SchipholService:
 
         schedule_date = date or datetime.now().strftime("%Y-%m-%d")
 
+        # Schiphol requires zero-padded 4-digit flight numbers (e.g. KL792 → KL0792)
+        flight_clean = flight_name.upper().replace(" ", "")
+        m = re.match(r"^([A-Z]{2})(\d+)$", flight_clean)
+        if m:
+            airline, number = m.groups()
+            flight_clean = f"{airline}{int(number):04d}"
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     SchipholService.FLIGHTS_URL,
                     headers=SchipholService._headers(),
                     params={
-                        "flightName":   flight_name.upper().replace(" ", ""),
+                        "flightName":   flight_clean,
                         "scheduleDate": schedule_date,
                     },
                     timeout=SchipholService.TIMEOUT,
                 )
                 response.raise_for_status()
+                if not response.content:
+                    print(f"WARNING:  Empty response from Schiphol for {flight_name} — using mock data")
+                    return _mock_flight_data()
                 flights = response.json().get("flights", [])
 
         except httpx.TimeoutException:
@@ -138,6 +149,9 @@ class SchipholService:
             return _mock_flight_data()
         except httpx.HTTPStatusError as e:
             print(f"ERROR:  Schiphol API {e.response.status_code} for {flight_name} — using mock data")
+            return _mock_flight_data()
+        except ValueError as e:
+            print(f"WARNING:  Schiphol returned non-JSON for {flight_name} — using mock data")
             return _mock_flight_data()
         except Exception as e:
             print(f"ERROR:  Schiphol API error: {e} — using mock data")

@@ -19,6 +19,7 @@ from services.airport_data import (
     AIRPORT_CONFIG, CHECKIN_CUTOFF_BY_PASSPORT,
 )
 from services.schiphol_api import SchipholService
+from services.aerodatabox_api import AeroDataBoxService
 from services import cache_service  # ACTIVITY PLANNING — cache not called in Step 1; re-enable in Step 3
 
 # ACTIVITY PLANNING — imports below not needed until Step 3
@@ -165,28 +166,48 @@ def calculate_minutes_between(arrival_iso: str, departure_iso: str) -> int:
     return total_minutes
 
 
+async def _get_flight(
+    flight_number: str,
+    date: Optional[str],
+    airport_code: str,
+    direction: str,
+) -> dict:
+    """Route flight lookup to Schiphol (AMS) or AeroDataBox (LIS/SIN)."""
+    if airport_code == "AMS":
+        return await SchipholService.get_flight(flight_number, date)
+    else:
+        return await AeroDataBoxService.get_flight(flight_number, date, airport_code, direction)
+
+
 async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
     """
     Step 1: Build flight overview and layover verdict.
 
-    Calls Schiphol for both flights, computes buffer from airport_data constants
-    and live security queue (AMS only), and returns verdict + persona list.
+    Routes to Schiphol (AMS) or AeroDataBox (LIS/SIN), computes buffer from
+    airport_data constants and live security queue (AMS only), returns verdict
+    + persona list.
     """
-    airport_cfg = AIRPORT_CONFIG.get(input_data.airport_code)
+    airport_cfg = AIRPORT_CONFIG.get(input_data.layover_airport)
     if not airport_cfg:
-        raise ValueError(f"Airport {input_data.airport_code} not supported")
+        raise ValueError(f"Airport {input_data.layover_airport} not supported")
 
     # ── Flight data ────────────────────────────────────────────────────────────
-    inbound_raw  = await SchipholService.get_flight(input_data.inbound_flight,  input_data.flight_date)
-    outbound_raw = await SchipholService.get_flight(input_data.outbound_flight, input_data.flight_date)
+    inbound_raw  = await _get_flight(
+        input_data.inbound_flight, input_data.inbound_date,
+        input_data.layover_airport, "inbound",
+    )
+    outbound_raw = await _get_flight(
+        input_data.outbound_flight, input_data.outbound_date,
+        input_data.layover_airport, "outbound",
+    )
 
-    scheduled_arrival  = inbound_raw.get("scheduled_arrival")
-    actual_arrival     = inbound_raw.get("actual_arrival")
-    effective_arrival  = actual_arrival or scheduled_arrival  # use actual if available
+    scheduled_arrival   = inbound_raw.get("scheduled_arrival")
+    actual_arrival      = inbound_raw.get("actual_arrival")
+    effective_arrival   = actual_arrival or scheduled_arrival  # use actual if available
     scheduled_departure = outbound_raw.get("scheduled_departure")
 
     if not scheduled_arrival or not scheduled_departure:
-        raise ValueError("Could not resolve flight times — check flight numbers and date")
+        raise ValueError("Could not resolve flight times — check flight numbers and dates")
 
     # Layover uses actual/estimated arrival to account for inbound delay
     layover_duration_minutes = calculate_minutes_between(effective_arrival, scheduled_departure)
@@ -195,28 +216,45 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
 
     # ── Buffer calculation ─────────────────────────────────────────────────────
     pier = inbound_raw.get("pier", "")
-    if input_data.airport_code == "AMS":
+    if input_data.layover_airport == "AMS":
         exit_time_min = AMS_EXIT_TIME_BY_PIER.get(pier.upper(), EXIT_TIME_FALLBACK_MIN)
     else:
         exit_time_min = EXIT_TIME_FALLBACK_MIN
 
     # Live Schiphol queue for AMS; hardcoded fallback for LIS/SIN
-    if input_data.airport_code == "AMS":
-        outbound_terminal = outbound_raw.get("terminal")
-        queue_data = await SchipholService.get_security_queue(outbound_terminal)
+    if input_data.layover_airport == "AMS":
+        # Schiphol queue areas map to piers (e.g. "D"), not terminal numbers (e.g. "2")
+        outbound_pier = outbound_raw.get("pier") or outbound_raw.get("terminal")
+        queue_data = await SchipholService.get_security_queue(outbound_pier)
         security_reentry_min = queue_data.get("queue_minutes", airport_cfg["security_reentry_min_fallback"])
     else:
         security_reentry_min = airport_cfg["security_reentry_min_fallback"]
 
-    walk_to_gate_min  = airport_cfg["walk_to_gate_min"]
-    checkin_cutoff_min = CHECKIN_CUTOFF_BY_PASSPORT.get(input_data.passport_region, 75)
-    total_buffer_min  = exit_time_min + security_reentry_min + walk_to_gate_min + checkin_cutoff_min
+    walk_to_gate_min   = airport_cfg["walk_to_gate_min"]
+    checkin_cutoff_min = CHECKIN_CUTOFF_BY_PASSPORT.get(input_data.passport_type, 75)
+    total_buffer_min   = exit_time_min + security_reentry_min + walk_to_gate_min + checkin_cutoff_min
 
     usable_minutes = max(0, layover_duration_minutes - total_buffer_min)
 
+    transport_to_city_min = airport_cfg.get("transport_to_city_min", 30)
+    city_time_preview = max(0, usable_minutes - (transport_to_city_min * 2))
+    print(
+        f"\n── Layover calculation ──────────────────────────\n"
+        f"  Effective arrival:    {effective_arrival}\n"
+        f"  Scheduled departure:  {scheduled_departure}\n"
+        f"  Total layover:        {layover_duration_minutes} min\n"
+        f"  Exit time (pier {pier or '?'}):   {exit_time_min} min\n"
+        f"  Security re-entry:    {security_reentry_min} min\n"
+        f"  Walk to gate:         {walk_to_gate_min} min\n"
+        f"  Check-in cutoff:      {checkin_cutoff_min} min\n"
+        f"  Total buffer:         {total_buffer_min} min\n"
+        f"  Usable:               {usable_minutes} min\n"
+        f"  Transport (×2):       {transport_to_city_min * 2} min\n"
+        f"  Yours in the city:    {city_time_preview} min\n"
+        f"────────────────────────────────────────────────\n"
+    )
+
     # ── Verdict ────────────────────────────────────────────────────────────────
-    # ACTIVITY PLANNING — in Step 3 these thresholds will be refined by subtracting
-    # round-trip transport time (transport_to_city_min × 2) before the 75-min check
     if usable_minutes <= 0:
         verdict = "not_possible"
     elif usable_minutes < 75:
@@ -245,18 +283,22 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         pier=outbound_raw.get("pier", ""),
     )
 
-    # ── Calculate city time (for place options filtering) ────────────────────
+    # ── City time (transport_to_city × 2 subtracted from usable minutes) ──────
     transport_to_city_min = airport_cfg.get("transport_to_city_min", 30)
     city_time_minutes = max(0, usable_minutes - (transport_to_city_min * 2))
 
-    # ── Get place options ──────────────────────────────────────────────────────
-    place_options = await get_place_options_with_photos(input_data.airport_code, city_time_minutes)
+    # ── Place options ──────────────────────────────────────────────────────────
+    place_options = await get_place_options_with_photos(input_data.layover_airport, city_time_minutes)
 
     return PlannerOutput(
         flight_overview=FlightOverview(
             inbound=inbound_info,
             outbound=outbound_info,
-            layover_duration_minutes=layover_duration_minutes,
+            total_layover_minutes=layover_duration_minutes,
+            airport_buffer_minutes=total_buffer_min,
+            security_reentry_minutes=security_reentry_min,
+            transport_minutes=transport_to_city_min * 2,
+            city_time_minutes=city_time_minutes,
         ),
         buffer_breakdown=BufferBreakdown(
             exit_time_min=exit_time_min,
@@ -269,10 +311,6 @@ async def generate_plan(input_data: PlannerInput) -> Optional[PlannerOutput]:
         verdict=verdict,
         personas=PERSONAS,
         place_options=place_options,
-        # Frontend expects these fields explicitly
-        total_minutes=layover_duration_minutes,
-        buffer_minutes=total_buffer_min,
-        city_time_minutes=city_time_minutes,
         available_time_minutes=usable_minutes,
     )
 

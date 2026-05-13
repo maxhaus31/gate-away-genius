@@ -1,58 +1,24 @@
-import { useState } from "react";
 import { AIRPORTS, AirportCode, PassportRegion, PASSPORT_LABELS } from "@/lib/gateaway-data";
-import { Loader2, AlertCircle } from "lucide-react";
 
 interface Props {
-  arrival: string;
-  departure: string;
   airport: AirportCode;
   passport: PassportRegion;
   arrivalFlight?: string;
   departureFlight?: string;
-  transportMode?: "transit" | "driving";
+  inboundDate?: string;
+  outboundDate?: string;
   onChange: (patch: Partial<{
-    arrival: string;
-    departure: string;
     airport: AirportCode;
     passport: PassportRegion;
     arrivalFlight: string;
     departureFlight: string;
-    transportMode: "transit" | "driving";
+    inboundDate: string;
+    outboundDate: string;
   }>) => void;
   onSubmit: () => void;
 }
 
-export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlight, departureFlight, transportMode = "transit", onChange, onSubmit }: Props) => {
-  const [arrivalLookupLoading, setArrivalLookupLoading] = useState(false);
-  const [departureLookupLoading, setDepartureLookupLoading] = useState(false);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-
-  const lookupFlight = async (flightNumber: string, direction: "arrival" | "departure") => {
-    const setLoading = direction === "arrival" ? setArrivalLookupLoading : setDepartureLookupLoading;
-    setLoading(true);
-    setLookupError(null);
-    try {
-      const response = await fetch(
-        `/api/flights/lookup?flight_number=${encodeURIComponent(flightNumber)}`
-      );
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || "Flight not found");
-      }
-      const data = await response.json();
-      const timeField = direction === "arrival" ? "scheduled_arrival" : "scheduled_departure";
-      const time = data[timeField];
-      if (time) {
-        // Extract HH:MM from ISO string for the time picker
-        const hhmm = time.slice(11, 16);
-        onChange(direction === "arrival" ? { arrival: hhmm } : { departure: hhmm });
-      }
-    } catch (err) {
-      setLookupError(err instanceof Error ? err.message : "Failed to look up flight");
-    } finally {
-      setLoading(false);
-    }
-  };
+export const PlannerForm = ({ airport, passport, arrivalFlight, departureFlight, inboundDate, outboundDate, onChange, onSubmit }: Props) => {
 
   return (
     <form
@@ -63,23 +29,41 @@ export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlig
       className="rounded-2xl border border-border bg-card p-6 sm:p-8"
     >
       <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
-        <Field label="You land at">
+        <Field label="Arrival flight">
           <input
-            type="time"
-            required
-            value={arrival}
-            onChange={(e) => onChange({ arrival: e.target.value })}
+            type="text"
+            placeholder="e.g., KL1234"
+            value={arrivalFlight || ""}
+            onChange={(e) => onChange({ arrivalFlight: e.target.value })}
             className="w-full bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
           />
+          <div className="mt-4">
+            <span className="block text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground mb-1">Date</span>
+            <input
+              type="date"
+              value={inboundDate || ""}
+              onChange={(e) => onChange({ inboundDate: e.target.value })}
+              className="w-full bg-transparent text-base font-medium text-foreground outline-none [color-scheme:dark]"
+            />
+          </div>
         </Field>
-        <Field label="Your next flight leaves">
+        <Field label="Departure flight">
           <input
-            type="time"
-            required
-            value={departure}
-            onChange={(e) => onChange({ departure: e.target.value })}
+            type="text"
+            placeholder="e.g., TP1835"
+            value={departureFlight || ""}
+            onChange={(e) => onChange({ departureFlight: e.target.value })}
             className="w-full bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
           />
+          <div className="mt-4">
+            <span className="block text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground mb-1">Date</span>
+            <input
+              type="date"
+              value={outboundDate || ""}
+              onChange={(e) => onChange({ outboundDate: e.target.value })}
+              className="w-full bg-transparent text-base font-medium text-foreground outline-none [color-scheme:dark]"
+            />
+          </div>
         </Field>
         <Field label="Connecting through">
           <select
@@ -106,43 +90,6 @@ export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlig
               </option>
             ))}
           </select>
-        </Field>
-        <Field label="Arrival flight (optional)">
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              placeholder="e.g., KL1234"
-              value={arrivalFlight || ""}
-              onChange={(e) => onChange({ arrivalFlight: e.target.value })}
-              className="flex-1 bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
-            />
-          </div>
-        </Field>
-        <Field label="Departure flight (optional)">
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              placeholder="e.g., TP1835"
-              value={departureFlight || ""}
-              onChange={(e) => onChange({ departureFlight: e.target.value })}
-              className="flex-1 bg-transparent text-3xl font-medium tracking-tight text-foreground outline-none [color-scheme:dark]"
-            />
-            {departureFlight && (
-              <button
-                type="button"
-                onClick={() => lookupFlight(departureFlight, "departure")}
-                disabled={departureLookupLoading}
-                className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-              >
-              </button>
-            )}
-          </div>
-          {lookupError && (
-            <div className="flex gap-2 items-start mt-2 text-sm text-destructive">
-              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>{lookupError}</span>
-            </div>
-          )}
         </Field>
       </div>
 
