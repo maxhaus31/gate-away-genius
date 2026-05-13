@@ -89,11 +89,16 @@ class RouteService:
             # Add airport as final destination
             all_stops.append(("Airport (Return)", airport_coords["lat"], airport_coords["lng"]))
             
+            # Build waypoints for ALL stops (airport + places + return airport)
+            # This is done FIRST so markers show on map even if route calculation fails
+            waypoints = []
+            for i, (name, lat, lng) in enumerate(all_stops):
+                waypoints.append({"lat": lat, "lng": lng, "name": name})
+            
             # Calculate legs between consecutive stops
             total_distance = 0
             total_duration = 0
             legs = []
-            waypoints = []
             all_polylines = []
             
             travel_mode = "TRANSIT" if mode == "transit" else "DRIVE"
@@ -120,7 +125,7 @@ class RouteService:
                 headers = {
                     "Content-Type": "application/json",
                     "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
-                    "X-Goog-FieldMask": "routes.legs.duration,routes.legs.distanceMeters,routes.polyline",
+                    "X-Goog-FieldMask": "routes.legs.duration,routes.legs.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.steps.transitDetails.arrivalStop,routes.legs.steps.transitDetails.departureStop,routes.legs.steps.transitDetails.transitLine,routes.polyline",
                 }
                 
                 async with httpx.AsyncClient() as client:
@@ -154,12 +159,15 @@ class RouteService:
                             
                             total_distance += distance
                             total_duration += duration_minutes
+
+                            transit_details = RouteService._extract_transit_details(leg.get("steps", []))
                             
                             legs.append({
                                 "from_place": from_name,
                                 "to_place": to_name,
                                 "distance_meters": distance,
                                 "duration_minutes": duration_minutes,
+                                "transit_details": transit_details,
                             })
                     
                     # Collect polyline if available
@@ -167,25 +175,78 @@ class RouteService:
                         polyline_str = route["polyline"].get("encodedPolyline", "")
                         if polyline_str:
                             all_polylines.append(polyline_str)
-                
-                # Add waypoint
-                waypoints.append({"lat": from_lat, "lng": from_lng, "name": from_name})
-            
-            # Add final waypoint
-            waypoints.append({
-                "lat": all_stops[-1][1],
-                "lng": all_stops[-1][2],
-                "name": all_stops[-1][0]
-            })
             
             return {
                 "total_distance_meters": total_distance,
                 "total_duration_minutes": total_duration,
                 "legs": legs,
-                "polyline": "|".join(all_polylines) if all_polylines else None,
+                "polyline": all_polylines[0] if all_polylines else None,
+                "polyline_segments": all_polylines,
                 "waypoints": waypoints,
             }
         
         except Exception as e:
             print(f"⚠️ Route calculation error: {e}")
             return None
+
+    @staticmethod
+    def _extract_transit_details(steps: List[Dict]) -> Optional[Dict]:
+        """Extract transit line and stop details from a Google Routes leg."""
+        if not steps:
+            return None
+
+        segments = []
+        for step in steps:
+            transit_details = step.get("transitDetails") or step.get("transit_details")
+            if not transit_details:
+                continue
+
+            transit_line = transit_details.get("transitLine", {})
+            departure_stop = (
+                transit_details.get("departureStop")
+                or step.get("departureStop")
+                or {}
+            )
+            arrival_stop = (
+                transit_details.get("arrivalStop")
+                or step.get("arrivalStop")
+                or {}
+            )
+            vehicle = transit_line.get("vehicle", {})
+
+            line_name = (
+                transit_line.get("nameShort")
+                or transit_line.get("name")
+                or transit_line.get("shortName")
+                or transit_line.get("nameShortText")
+                or vehicle.get("name")
+                or "Transit"
+            )
+
+            departure_stop_name = departure_stop.get("name") if isinstance(departure_stop, dict) else str(departure_stop)
+            arrival_stop_name = arrival_stop.get("name") if isinstance(arrival_stop, dict) else str(arrival_stop)
+
+            segments.append({
+                "line_name": line_name,
+                "line_color": transit_line.get("color", "#ef4444"),
+                "line_text_color": transit_line.get("textColor", "#ffffff"),
+                "vehicle_name": vehicle.get("name", "Transit"),
+                "vehicle_type": vehicle.get("type", ""),
+                "departure_stop": departure_stop_name,
+                "arrival_stop": arrival_stop_name,
+                "headsign": transit_details.get("headsign", ""),
+            })
+
+        if not segments:
+            return None
+
+        first_segment = segments[0]
+        last_segment = segments[-1]
+        return {
+            "summary": first_segment["line_name"],
+            "line_color": first_segment["line_color"],
+            "line_text_color": first_segment["line_text_color"],
+            "segments": segments,
+            "departure_stop": first_segment.get("departure_stop", ""),
+            "arrival_stop": last_segment.get("arrival_stop", ""),
+        }

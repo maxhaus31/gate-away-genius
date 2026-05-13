@@ -87,6 +87,7 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
                 "duration_minutes": travel_duration,
                 "cumulative_minutes": cumulative_minutes + travel_duration,
                 "distance_meters": leg["distance_meters"],
+                "transit_details": leg.get("transit_details"),
             })
             cumulative_minutes += travel_duration
             

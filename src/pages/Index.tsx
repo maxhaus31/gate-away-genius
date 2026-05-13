@@ -334,7 +334,7 @@ const Index = () => {
               {!calculatingRoute && (
                 <>
                   <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
-                    <TravelTimesBreakdown routeData={routeData} />
+                    <TravelTimesBreakdown routeData={routeData} places={selectedPlaces} />
                   </div>
                   <DebugMap routeData={routeData} airportCode={layoverAirport} />
                 </>

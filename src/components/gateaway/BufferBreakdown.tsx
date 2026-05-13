@@ -1,12 +1,19 @@
-import { PlanBufferBreakdown } from "@/api/client";
 import { formatDuration } from "@/lib/gateaway-data";
 
-const ROWS: { key: keyof PlanBufferBreakdown; label: string }[] = [
+type PlanBufferBreakdown = {
+  exit_time_min: number;
+  security_reentry_min: number;
+  walk_to_gate_min: number;
+  checkin_cutoff_min: number;
+  total_buffer_min: number;
+};
+
+const ROWS = [
   { key: "exit_time_min", label: "Exit airport + immigration" },
   { key: "security_reentry_min", label: "Security re-entry" },
   { key: "walk_to_gate_min", label: "Walk to gate" },
   { key: "checkin_cutoff_min", label: "Check-in cutoff" },
-];
+] as const satisfies ReadonlyArray<{ key: keyof PlanBufferBreakdown; label: string }>;
 
 export const BufferBreakdown = ({
   breakdown,
