@@ -5,13 +5,14 @@ Route Service: Calculate multi-stop routes using Google Maps Directions API
 import httpx
 from config import GOOGLE_MAPS_API_KEY
 from typing import Optional, Dict, List
-import polyline as pl
+from datetime import datetime, timezone
 
 
 class RouteService:
     """Service to calculate routes between multiple waypoints"""
     
     BASE_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
+    DISTANCE_MATRIX_BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json"
     TIMEOUT = 10.0
     
     # Airport coordinates
@@ -107,74 +108,48 @@ class RouteService:
                 from_name, from_lat, from_lng = all_stops[i]
                 to_name, to_lat, to_lng = all_stops[i + 1]
                 
-                # Build request for this leg
-                body = {
-                    "origin": {
-                        "location": {
-                            "latLng": {"latitude": from_lat, "longitude": from_lng}
-                        }
-                    },
-                    "destination": {
-                        "location": {
-                            "latLng": {"latitude": to_lat, "longitude": to_lng}
-                        }
-                    },
-                    "travelMode": travel_mode,
-                }
-                
-                headers = {
-                    "Content-Type": "application/json",
-                    "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
-                    "X-Goog-FieldMask": "routes.legs.duration,routes.legs.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.steps.transitDetails.arrivalStop,routes.legs.steps.transitDetails.departureStop,routes.legs.steps.transitDetails.transitLine,routes.polyline",
-                }
-                
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        RouteService.BASE_URL,
-                        json=body,
-                        headers=headers,
-                        timeout=RouteService.TIMEOUT
-                    )
-                    
-                    if not response.is_success:
-                        print(f"⚠️ Google Maps error for leg {i}: {response.status_code}")
-                        continue
-                    
-                    data = response.json()
-                    
-                    if not data.get("routes") or len(data["routes"]) == 0:
-                        print(f"⚠️ No routes found for leg {i}")
-                        continue
-                    
-                    route = data["routes"][0]
-                    
-                    if route.get("legs"):
-                        for leg in route["legs"]:
-                            distance = leg.get("distanceMeters", 0)
-                            duration_str = leg.get("duration", "0s")
-                            
-                            # Parse duration (format: "123s" for 123 seconds)
-                            duration_seconds = int(duration_str.replace("s", "")) if duration_str else 0
-                            duration_minutes = duration_seconds // 60
-                            
-                            total_distance += distance
-                            total_duration += duration_minutes
+                leg_result = await RouteService._fetch_routes_leg(
+                    from_lat=from_lat,
+                    from_lng=from_lng,
+                    to_lat=to_lat,
+                    to_lng=to_lng,
+                    mode=mode,
+                    leg_index=i,
+                )
 
-                            transit_details = RouteService._extract_transit_details(leg.get("steps", []))
-                            
-                            legs.append({
-                                "from_place": from_name,
-                                "to_place": to_name,
-                                "distance_meters": distance,
-                                "duration_minutes": duration_minutes,
-                                "transit_details": transit_details,
-                            })
-                    
-                    # Collect polyline if available
-                    if route.get("polyline"):
-                        polyline_str = route["polyline"].get("encodedPolyline", "")
-                        if polyline_str:
-                            all_polylines.append(polyline_str)
+                if leg_result is None:
+                    leg_result = await RouteService._fetch_distance_matrix_leg(
+                        from_lat=from_lat,
+                        from_lng=from_lng,
+                        to_lat=to_lat,
+                        to_lng=to_lng,
+                        mode=mode,
+                        leg_index=i,
+                    )
+
+                if leg_result is None:
+                    print(f"⚠️ No live travel time found for leg {i}: {from_name} → {to_name}")
+                    continue
+
+                distance = leg_result.get("distance_meters", 0)
+                duration_minutes = leg_result.get("duration_minutes", 0)
+                transit_details = leg_result.get("transit_details")
+                polyline_str = leg_result.get("polyline")
+
+                total_distance += distance
+                total_duration += duration_minutes
+
+                legs.append({
+                    "from_place": from_name,
+                    "to_place": to_name,
+                    "distance_meters": distance,
+                    "duration_minutes": duration_minutes,
+                    "transit_details": transit_details,
+                    "source": leg_result.get("source", "routes"),
+                })
+
+                if polyline_str:
+                    all_polylines.append(polyline_str)
             
             return {
                 "total_distance_meters": total_distance,
@@ -190,6 +165,157 @@ class RouteService:
             return None
 
     @staticmethod
+    async def _fetch_routes_leg(
+        from_lat: float,
+        from_lng: float,
+        to_lat: float,
+        to_lng: float,
+        mode: str,
+        leg_index: int,
+    ) -> Optional[Dict]:
+        body = {
+            "origin": {
+                "location": {
+                    "latLng": {"latitude": from_lat, "longitude": from_lng}
+                }
+            },
+            "destination": {
+                "location": {
+                    "latLng": {"latitude": to_lat, "longitude": to_lng}
+                }
+            },
+            "travelMode": "TRANSIT" if mode == "transit" else "DRIVE",
+        }
+
+        if mode == "transit":
+            body["departureTime"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        else:
+            body["routingPreference"] = "TRAFFIC_AWARE_OPTIMAL"
+
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+            "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.legs.duration,routes.legs.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.steps.transitDetails.stopDetails,routes.legs.steps.transitDetails.stopDetails.arrivalStop,routes.legs.steps.transitDetails.stopDetails.departureStop,routes.legs.steps.transitDetails.stopDetails.arrivalTime,routes.legs.steps.transitDetails.stopDetails.departureTime,routes.legs.steps.transitDetails.transitLine,routes.legs.steps.transitDetails.headsign,routes.legs.steps.transitDetails.tripShortText,routes.polyline.encodedPolyline",
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                RouteService.BASE_URL,
+                json=body,
+                headers=headers,
+                timeout=RouteService.TIMEOUT,
+            )
+
+        if not response.is_success:
+            print(
+                f"⚠️ Google Routes error for leg {leg_index}: {response.status_code} "
+                f"{response.text[:300]}"
+            )
+            return None
+
+        data = response.json()
+        routes = data.get("routes") or []
+        if not routes:
+            print(f"⚠️ Google Routes returned no routes for leg {leg_index}: keys={list(data.keys())}")
+            return None
+
+        route = routes[0]
+        route_legs = route.get("legs") or []
+        if not route_legs:
+            print(f"⚠️ Google Routes returned no legs for leg {leg_index}")
+            return None
+
+        first_leg = route_legs[0]
+        duration_seconds = RouteService._parse_duration_seconds(first_leg.get("duration"))
+        distance_meters = int(first_leg.get("distanceMeters", 0) or 0)
+        transit_details = RouteService._extract_transit_details(first_leg.get("steps", []))
+        polyline_str = (route.get("polyline") or {}).get("encodedPolyline", "")
+
+        return {
+            "distance_meters": distance_meters,
+            "duration_minutes": max(1, duration_seconds // 60) if duration_seconds else 0,
+            "transit_details": transit_details,
+            "polyline": polyline_str or None,
+            "source": "routes",
+        }
+
+    @staticmethod
+    async def _fetch_distance_matrix_leg(
+        from_lat: float,
+        from_lng: float,
+        to_lat: float,
+        to_lng: float,
+        mode: str,
+        leg_index: int,
+    ) -> Optional[Dict]:
+        params = {
+            "origins": f"{from_lat},{from_lng}",
+            "destinations": f"{to_lat},{to_lng}",
+            "mode": mode,
+            "key": GOOGLE_MAPS_API_KEY,
+            "units": "metric",
+        }
+
+        if mode == "transit":
+            params["departure_time"] = "now"
+            params["transit_routing_preference"] = "less_walking"
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                RouteService.DISTANCE_MATRIX_BASE_URL,
+                params=params,
+                timeout=RouteService.TIMEOUT,
+            )
+
+        if not response.is_success:
+            print(
+                f"⚠️ Distance Matrix error for leg {leg_index}: {response.status_code} "
+                f"{response.text[:300]}"
+            )
+            return None
+
+        data = response.json()
+        rows = data.get("rows") or []
+        if not rows:
+            print(f"⚠️ Distance Matrix returned no rows for leg {leg_index}")
+            return None
+
+        elements = rows[0].get("elements") or []
+        if not elements:
+            print(f"⚠️ Distance Matrix returned no elements for leg {leg_index}")
+            return None
+
+        element = elements[0]
+        if element.get("status") != "OK":
+            print(f"⚠️ Distance Matrix element status for leg {leg_index}: {element.get('status')}")
+            return None
+
+        duration = (element.get("duration") or {}).get("value", 0)
+        distance = (element.get("distance") or {}).get("value", 0)
+
+        return {
+            "distance_meters": int(distance or 0),
+            "duration_minutes": max(1, int(duration // 60)) if duration else 0,
+            "transit_details": None,
+            "polyline": None,
+            "source": "distance_matrix",
+        }
+
+    @staticmethod
+    def _parse_duration_seconds(duration_value: Optional[str]) -> int:
+        if not duration_value:
+            return 0
+        if isinstance(duration_value, (int, float)):
+            return int(duration_value)
+        duration_text = str(duration_value).strip()
+        if duration_text.endswith("s"):
+            duration_text = duration_text[:-1]
+        try:
+            return int(float(duration_text))
+        except ValueError:
+            return 0
+
+    @staticmethod
     def _extract_transit_details(steps: List[Dict]) -> Optional[Dict]:
         """Extract transit line and stop details from a Google Routes leg."""
         if not steps:
@@ -202,16 +328,9 @@ class RouteService:
                 continue
 
             transit_line = transit_details.get("transitLine", {})
-            departure_stop = (
-                transit_details.get("departureStop")
-                or step.get("departureStop")
-                or {}
-            )
-            arrival_stop = (
-                transit_details.get("arrivalStop")
-                or step.get("arrivalStop")
-                or {}
-            )
+            stop_details = transit_details.get("stopDetails") or {}
+            departure_stop = stop_details.get("departureStop") or step.get("departureStop") or {}
+            arrival_stop = stop_details.get("arrivalStop") or step.get("arrivalStop") or {}
             vehicle = transit_line.get("vehicle", {})
 
             line_name = (
