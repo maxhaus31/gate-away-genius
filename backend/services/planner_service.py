@@ -24,6 +24,7 @@ from services import cache_service  # ACTIVITY PLANNING — cache not called in 
 # ACTIVITY PLANNING — imports below not needed until Step 3
 from services.gemini_ai import GeminiActivityService
 from services.google_maps import GoogleMapsService
+from services.places_service import PlacesService
 from services.unsplash import UnsplashService
 
 # ACTIVITY PLANNING — not needed until Step 3
@@ -332,68 +333,54 @@ def get_suggestions_for_city_time(airport_code: str, city_time_minutes: int) -> 
 
 async def get_place_options_with_photos(airport_code: str, city_time_minutes: int) -> List[PlaceOption]:
     # ACTIVITY PLANNING — not needed until Step 3
-    """Get fallback place options with photos from Unsplash API."""
-    place_options_data = {
-        "LIS": [
-            {"name": "Praça do Comércio", "description": "Historic riverside plaza with stunning views.", "search_query": "lisbon plaza", "coordinates": "38.7072,-9.1370"},
-            {"name": "Pastéis de Nata at Manteigaria", "description": "Famous pastry shop - don't miss the original custard tart.", "search_query": "portuguese pastry", "coordinates": "38.7076,-9.1359"},
-            {"name": "Miradouro de Santa Catarina", "description": "Best viewpoint for sunset and the Tagus river.", "search_query": "lisbon viewpoint", "coordinates": "38.7097,-9.1477"},
-            {"name": "Tram 28", "description": "Iconic yellow tram through the historic Alfama district.", "search_query": "lisbon tram", "coordinates": "38.7126,-9.1310"},
-            {"name": "Café Majestic", "description": "Historic café with Belle Époque elegance and great coffee.", "search_query": "portuguese cafe", "coordinates": "38.7095,-9.1420"},
-        ],
-        "AMS": [
-            {"name": "Amsterdam Canals", "description": "UNESCO-listed canal ring - quintessential Amsterdam.", "search_query": "amsterdam canal", "coordinates": "52.3700,4.8952"},
-            {"name": "Rijksmuseum", "description": "World-class art museum - home to masterpieces.", "search_query": "museum art", "coordinates": "52.3601,4.8852"},
-            {"name": "Jordaan District", "description": "Charming neighborhood with galleries, cafés, and antique shops.", "search_query": "amsterdam neighborhood", "coordinates": "52.3750,4.8770"},
-            {"name": "Anne Frank House", "description": "Moving historical museum - book ahead online.", "search_query": "amsterdam history", "coordinates": "52.3752,4.8838"},
-            {"name": "Bitterballen & Brown Café", "description": "Traditional Dutch snack in a cozy local pub.", "search_query": "dutch food", "coordinates": "52.3689,4.8981"},
-        ],
-        "SIN": [
-            {"name": "Gardens by the Bay", "description": "Futuristic supertrees and enchanting light show.", "search_query": "singapore gardens", "coordinates": "1.2816,103.8636"},
-            {"name": "Jewel Changi - Waterfall", "description": "World's tallest indoor waterfall - don't miss it!", "search_query": "waterfall", "coordinates": "1.3581,103.9868"},
-            {"name": "Hawker Chan - Chicken Rice", "description": "Michelin-starred street food - legend in a stall.", "search_query": "singapore food", "coordinates": "1.2870,103.8462"},
-            {"name": "Marina Bay Sands Observation Deck", "description": "57th floor views over the entire skyline.", "search_query": "singapore skyline", "coordinates": "1.2858,103.8607"},
-            {"name": "Orchard Road Shopping", "description": "Luxury and local brands on Singapore's main drag.", "search_query": "shopping", "coordinates": "1.3048,103.8328"},
-        ],
-    }
-
-    places = place_options_data.get(airport_code, [])
-    fitting_places = [p for p in places if city_time_minutes >= 75]
-    if not fitting_places:
-        fitting_places = places
-
-    result = []
-    for place in fitting_places[:5]:
-        photos = await UnsplashService.search_photos(query=place["search_query"], per_page=1)
-        if photos:
-            photo = photos[0]
+    """Get place options from Places API (with fallback to hardcoded) with photos from Unsplash API."""
+    try:
+        # Try to fetch real places from Places API (with fallback built in)
+        places = await PlacesService.find_attractions(
+            airport_code=airport_code,
+            available_minutes=city_time_minutes,
+            max_places=5,
+        )
+        
+        # Fetch photos in parallel for better performance
+        import asyncio
+        async def fetch_photo(place_name: str) -> Optional[str]:
+            """Fetch a single Unsplash photo, return URL or None"""
+            try:
+                photos = await UnsplashService.search_photos(query=place_name, per_page=1)
+                return photos[0]["url"] if photos else None
+            except Exception as e:
+                print(f"WARNING: Failed to fetch photo for {place_name}: {e}")
+                return None
+        
+        # Get all photo URLs in parallel
+        photo_tasks = [
+            fetch_photo(place.get("name", ""))
+            for place in places
+        ]
+        photo_urls = await asyncio.gather(*photo_tasks)
+        
+        result = []
+        for place, photo_url in zip(places, photo_urls):
+            # Convert place dict to PlaceOption object
+            place_id = place.get("name", "").replace(" ", "_").lower()
+            
             result.append(PlaceOption(
-                place_id=f"fallback_{place['name'].replace(' ', '_').lower()}",
-                name=place["name"],
-                description=place["description"],
-                rating=4.5,
-                user_ratings_total=0,
-                coordinates=place["coordinates"],  # Real coordinates
-                address="",
+                place_id=place_id,
+                name=place.get("name", ""),
+                description=place.get("description", ""),
+                rating=place.get("rating", 4.5),
+                user_ratings_total=place.get("user_ratings_total", 0),
+                coordinates=place.get("coordinates", ""),
+                address=place.get("address", ""),
                 types=["point_of_interest"],
-                photo_url=photo["url"],
-                photographer_name=photo["photographer"],
-                photographer_url=photo["photographer_url"],
-                unsplash_url=photo["unsplash_url"],
-                download_location=photo["download_location"],
+                photo_url=photo_url,
             ))
-        else:
-            result.append(PlaceOption(
-                place_id=f"fallback_{place['name'].replace(' ', '_').lower()}",
-                name=place["name"],
-                description=place["description"],
-                rating=4.5,
-                user_ratings_total=0,
-                coordinates=place["coordinates"],  # Real coordinates
-                address="",
-                types=["point_of_interest"],
-            ))
-    return result
+        
+        return result
+    except Exception as e:
+        print(f"ERROR: Failed to get place options: {e}")
+        return []
 
 
 async def get_persona_place_options(

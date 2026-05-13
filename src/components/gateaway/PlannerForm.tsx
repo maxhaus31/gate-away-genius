@@ -123,7 +123,6 @@ export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlig
                 disabled={arrivalLookupLoading}
                 className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
-                {arrivalLookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look up"}
               </button>
             )}
           </div>
