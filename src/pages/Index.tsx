@@ -11,11 +11,19 @@ import { RouteMap } from "@/components/gateaway/RouteMap";
 import { SimpleMap } from "@/components/gateaway/SimpleMap";
 import { DebugMap } from "@/components/gateaway/DebugMap";
 import { TravelTimesBreakdown } from "@/components/gateaway/TravelTimesBreakdown";
+import { PersonaSelector } from "@/components/gateaway/PersonaSelector";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion, AIRPORTS } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+const PERSONA_META: Record<string, { label: string; description: string }> = {
+  food_lover: { label: "Food Lover", description: "Travels to discover local cuisine, cafés, markets, and memorable dining experiences." },
+  culture_seeker: { label: "Culture Seeker", description: "Enjoys museums, history, traditions, architecture, and authentic local experiences." },
+  nature_wanderer: { label: "Nature Wanderer", description: "Prefers outdoor adventures, scenic landscapes, and peaceful escapes in nature." },
+  checklist_traveler: { label: "Checklist Traveler", description: "Focuses on visiting iconic landmarks and must-see attractions efficiently." },
+};
 
 // Extends gateaway-data.PlanResult with backend-only fields so components stay typed
 type PlanResult = GDPlanResult & Pick<PlanResponse,
@@ -39,6 +47,9 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanResult | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
+  const [personaPlaces, setPersonaPlaces] = useState<PlaceOption[]>([]);
+  const [loadingPersonaPlaces, setLoadingPersonaPlaces] = useState(false);
   const [selectedPlaces, setSelectedPlaces] = useState<PlaceOption[]>([]);
   const [routeData, setRouteData] = useState<any>(null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -50,6 +61,7 @@ const Index = () => {
       setLoading(true);
       setError(null);
       setPlan(null);
+      setSelectedPersona(null);
       setSelectedPlaces([]);
       setRouteData(null);
 
@@ -105,6 +117,48 @@ const Index = () => {
 
     fetchPlan();
   }, [submitted, inboundFlight, outboundFlight, airport, passport, transportMode]);
+
+  // Fetch persona-tailored places whenever the user picks a persona
+  useEffect(() => {
+    if (!selectedPersona || !plan) return;
+
+    const meta = PERSONA_META[selectedPersona];
+    if (!meta) return;
+
+    const fetchPersonaPlaces = async () => {
+      setLoadingPersonaPlaces(true);
+      setPersonaPlaces([]);
+      setSelectedPlaces([]);
+      setRouteData(null);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/places-for-persona`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            airport_code: airport,
+            persona_key: selectedPersona,
+            persona_label: meta.label,
+            persona_description: meta.description,
+            available_minutes: plan.cityTimeMinutes,
+          }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || "Failed to fetch persona places");
+        }
+        const data = await response.json();
+        setPersonaPlaces(data.place_options ?? []);
+      } catch (err) {
+        console.error("Persona places error:", err);
+        // Fall back to the generic places from the plan
+        setPersonaPlaces(plan.place_options ?? []);
+      } finally {
+        setLoadingPersonaPlaces(false);
+      }
+    };
+
+    fetchPersonaPlaces();
+  }, [selectedPersona]);
 
   // Calculate route when user clicks "Plan Trip" button
   const handlePlanTrip = async () => {
@@ -213,10 +267,18 @@ const Index = () => {
         <section className="mt-6 space-y-6">
           <Verdict plan={plan} />
 
-          {/* Place Options - Interactive selection */}
-          {plan.place_options && plan.place_options.length > 0 && (
+          <PersonaSelector selected={selectedPersona} onSelect={setSelectedPersona} />
+
+          {/* Place Options - revealed after persona is chosen */}
+          {selectedPersona && loadingPersonaPlaces && (
+            <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 flex items-center justify-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-muted-foreground">Finding places for you...</span>
+            </div>
+          )}
+          {selectedPersona && !loadingPersonaPlaces && personaPlaces.length > 0 && (
             <PlaceOptions
-              places={plan.place_options}
+              places={personaPlaces}
               selectedIds={new Set(selectedPlaces.map((p) => p.place_id))}
               onPlaceSelect={(place) => {
                 if (place.download_location) {
