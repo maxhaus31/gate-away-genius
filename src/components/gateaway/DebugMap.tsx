@@ -1,3 +1,4 @@
+/// <reference types="google.maps" />
 import { useEffect, useRef } from "react";
 
 interface RouteData {
@@ -60,7 +61,10 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
         position: { lat: wp.lat, lng: wp.lng },
         map: mapInstance.current,
         title: wp.name,
-        label: `${index + 1}`,
+        label: {
+          text: `${index + 1}`,
+          color: 'black',
+        },
       });
 
       // Rich info window with coordinates
@@ -89,55 +93,11 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
 
   return (
     <div className="w-full space-y-4">
-      {/* Debug Info Panel */}
-      <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
-        <h3 className="mb-3 font-semibold text-yellow-900">🐛 DEBUG MAP</h3>
-        <div className="space-y-2 text-sm text-yellow-800">
-          <div><strong>Airport:</strong> {airportCode}</div>
-          <div><strong>Total Waypoints:</strong> {routeData?.route?.waypoints?.length || 0}</div>
-          <div><strong>Map Initialized:</strong> {mapInstance.current ? "✅ Yes" : "❌ No"}</div>
-        </div>
-      </div>
-
-      {/* Coordinates Table */}
-      {routeData?.route?.waypoints && routeData.route.waypoints.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 text-left">#</th>
-                <th className="px-4 py-2 text-left">Place Name</th>
-                <th className="px-4 py-2 text-left">Latitude</th>
-                <th className="px-4 py-2 text-left">Longitude</th>
-              </tr>
-            </thead>
-            <tbody>
-              {routeData.route.waypoints.map((wp, idx) => (
-                <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                  <td className="px-4 py-2 font-semibold">{idx + 1}</td>
-                  <td className="px-4 py-2">{wp.name}</td>
-                  <td className="px-4 py-2 font-mono text-xs">{wp.lat.toFixed(6)}</td>
-                  <td className="px-4 py-2 font-mono text-xs">{wp.lng.toFixed(6)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
       {/* Map Container */}
       <div
         ref={mapRef}
         className="h-96 w-full rounded-lg border border-gray-300 shadow-md"
       />
-
-      {/* Raw JSON */}
-      <details className="rounded-lg border border-gray-300 p-4">
-        <summary className="cursor-pointer font-semibold">Raw Route Data (JSON)</summary>
-        <pre className="mt-3 overflow-x-auto rounded bg-gray-100 p-3 text-xs">
-          {JSON.stringify(routeData, null, 2)}
-        </pre>
-      </details>
     </div>
   );
 };
