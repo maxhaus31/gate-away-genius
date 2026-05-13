@@ -66,7 +66,7 @@ export const SimpleMap = ({ routeData, airportCode }: Props) => {
 
       // Add info window on click
       const infoWindow = new google.maps.InfoWindow({
-        content: `<div style="padding: 8px;"><strong>${wp.name}</strong></div>`,
+        content: `<div style="padding: 8px; color: black;"><strong style="color: black;">${wp.name}</strong></div>`,
       });
 
       marker.addListener("click", () => {

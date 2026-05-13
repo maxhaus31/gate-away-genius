@@ -24,7 +24,6 @@ from services import cache_service  # ACTIVITY PLANNING — cache not called in 
 # ACTIVITY PLANNING — imports below not needed until Step 3
 from services.gemini_ai import GeminiActivityService
 from services.google_maps import GoogleMapsService
-from services.places_service import PlacesService
 from services.unsplash import UnsplashService
 
 # ACTIVITY PLANNING — not needed until Step 3
