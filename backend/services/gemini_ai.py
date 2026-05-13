@@ -19,6 +19,525 @@ FALLBACK_MODEL = "gemini-2.0-flash-lite"
 _CACHE: dict = {}
 _CACHE_TTL = 600
 
+# Fallback persona places for when Gemini is rate-limited or unavailable
+FALLBACK_PERSONA_PLACES = {
+    "Lisbon": {
+        "food_lover": [
+            {
+                "name": "Time Out Market Lisbon",
+                "description": "A vibrant food hall showcasing the best of Lisbon's culinary scene with gourmet bites and local flavours.",
+                "address": "Avenida 24 de Julho, Lisbon",
+                "types": ["market", "food_court"],
+                "coordinates": "38.7068,-9.1453",
+                "search_query": "lisbon market food"
+            },
+            {
+                "name": "Pastéis de Belém",
+                "description": "The iconic custard tart bakery that defines Portuguese pastry tradition since 1837.",
+                "address": "Belem, Lisbon",
+                "types": ["bakery", "restaurant"],
+                "coordinates": "38.6988,-9.2065",
+                "search_query": "lisbon pastry bakery"
+            },
+            {
+                "name": "Mercado da Ribeira",
+                "description": "Historic riverside market buzzing with fresh produce, seafood, and authentic local energy.",
+                "address": "Avenida 24 de Julho, Lisbon",
+                "types": ["market", "food_market"],
+                "coordinates": "38.7066,-9.1455",
+                "search_query": "lisbon ribeira market"
+            },
+            {
+                "name": "Manteigaria",
+                "description": "A beloved neighborhood café and pastry shop perfect for a quick Portuguese coffee moment.",
+                "address": "Baixa Pombalina, Lisbon",
+                "types": ["café", "bakery"],
+                "coordinates": "38.7147,-9.1397",
+                "search_query": "lisbon cafe pastry"
+            },
+            {
+                "name": "Afonso e Café",
+                "description": "Cozy vintage café in Chiado serving excellent coffee and local sweets in a charming setting.",
+                "address": "Chiado, Lisbon",
+                "types": ["café", "restaurant"],
+                "coordinates": "38.7143,-9.1448",
+                "search_query": "lisbon vintage cafe"
+            }
+        ],
+        "culture_seeker": [
+            {
+                "name": "Mosteiro dos Jerónimos",
+                "description": "A UNESCO World Heritage monastery with stunning Manueline architecture and centuries of history.",
+                "address": "Belém, Lisbon",
+                "types": ["museum", "historic_site"],
+                "coordinates": "38.6983,-9.2067",
+                "search_query": "lisbon monastery architecture"
+            },
+            {
+                "name": "Azulejo Museum",
+                "description": "World's finest collection of Portuguese tiles showcasing centuries of azulejo artistry.",
+                "address": "Convento da Madre de Deus, Lisbon",
+                "types": ["museum", "art_gallery"],
+                "coordinates": "38.7197,-9.1114",
+                "search_query": "lisbon azulejo tiles museum"
+            },
+            {
+                "name": "Praça do Comércio",
+                "description": "Lisbon's grandest waterfront square with neoclassical architecture and iconic riverside views.",
+                "address": "Ribeira, Lisbon",
+                "types": ["tourist_attraction", "historical_landmark"],
+                "coordinates": "38.7072,-9.1366",
+                "search_query": "lisbon praca commerce square"
+            },
+            {
+                "name": "Miradouro de Santa Catarina",
+                "description": "A cherished viewpoint overlooking the Tejo River and city rooftops with classic Lisbon views.",
+                "address": "Bairro Alto, Lisbon",
+                "types": ["viewpoint", "tourist_attraction"],
+                "coordinates": "38.7089,-9.1482",
+                "search_query": "lisbon viewpoint river"
+            },
+            {
+                "name": "Alfama Old Town",
+                "description": "The oldest neighbourhood with winding tiled streets, fado music soul, and authentic local character.",
+                "address": "Alfama, Lisbon",
+                "types": ["neighborhood", "tourist_attraction"],
+                "coordinates": "38.7124,-9.1306",
+                "search_query": "lisbon alfama neighborhood"
+            }
+        ],
+        "nature_wanderer": [
+            {
+                "name": "Jerónimos Park",
+                "description": "Lush waterfront park with manicured gardens and serene riverside walking paths.",
+                "address": "Belém, Lisbon",
+                "types": ["park", "garden"],
+                "coordinates": "38.6970,-9.2085",
+                "search_query": "lisbon park gardens"
+            },
+            {
+                "name": "Miradouro da Senhora do Monte",
+                "description": "One of Lisbon's highest viewpoints offering panoramic vistas of the entire city and Tejo.",
+                "address": "Graça, Lisbon",
+                "types": ["viewpoint", "natural_landmark"],
+                "coordinates": "38.7225,-9.1308",
+                "search_query": "lisbon viewpoint panorama"
+            },
+            {
+                "name": "Tapada das Necessidades",
+                "description": "A hidden historic garden oasis with exotic plants, quiet pathways, and peaceful riverside views.",
+                "address": "Lapa, Lisbon",
+                "types": ["park", "garden"],
+                "coordinates": "38.7005,-9.1606",
+                "search_query": "lisbon secret garden nature"
+            },
+            {
+                "name": "Parque da Malagueira",
+                "description": "Contemporary urban park blending nature with sculpture and riverside walks along the Tejo.",
+                "address": "Oriente, Lisbon",
+                "types": ["park", "art_park"],
+                "coordinates": "38.7610,-9.1005",
+                "search_query": "lisbon modern park"
+            },
+            {
+                "name": "Cristo Rei Viewpoint",
+                "description": "Iconic landmark with sweeping 360-degree views of Lisbon and the bridge from across the river.",
+                "address": "Caparica, Lisbon",
+                "types": ["viewpoint", "landmark"],
+                "coordinates": "38.6805,-9.1654",
+                "search_query": "lisbon cristo rei statue"
+            }
+        ],
+        "checklist_traveler": [
+            {
+                "name": "Cristo Rei Statue",
+                "description": "Lisbon's most iconic monument—a massive statue overlooking the city like a guardian.",
+                "address": "Caparica, Lisbon",
+                "types": ["landmark", "monument"],
+                "coordinates": "38.6805,-9.1654",
+                "search_query": "lisbon cristo rei statue"
+            },
+            {
+                "name": "25 de Abril Bridge",
+                "description": "The famous red suspension bridge instantly recognizable as Lisbon's symbol.",
+                "address": "Ribeira, Lisbon",
+                "types": ["landmark", "engineering"],
+                "coordinates": "38.7095,-9.1641",
+                "search_query": "lisbon red bridge suspension"
+            },
+            {
+                "name": "Torre de Belém",
+                "description": "A UNESCO fortress tower from 1515 guarding the Tejo mouth—Lisbon's most photographed monument.",
+                "address": "Belém, Lisbon",
+                "types": ["historic_site", "monument"],
+                "coordinates": "38.6920,-9.2162",
+                "search_query": "lisbon torre belem tower"
+            },
+            {
+                "name": "Praça do Comércio",
+                "description": "Lisbon's most photographed square—a vast neoclassical waterfront plaza that defines the city.",
+                "address": "Ribeira, Lisbon",
+                "types": ["historic_site", "landmark"],
+                "coordinates": "38.7072,-9.1366",
+                "search_query": "lisbon praca commerce palace"
+            },
+            {
+                "name": "Castelo de São Jorge",
+                "description": "A hilltop castle with 11 centuries of history offering panoramic city views.",
+                "address": "Castelo, Lisbon",
+                "types": ["historic_site", "castle"],
+                "coordinates": "38.7141,-9.1338",
+                "search_query": "lisbon castle sao jorge"
+            }
+        ]
+    },
+    "Amsterdam": {
+        "food_lover": [
+            {
+                "name": "Albert Cuyp Market",
+                "description": "Amsterdam's largest and most vibrant street market with food stalls, local snacks, and authentic Dutch energy.",
+                "address": "Albert Cuyp Straat, Amsterdam",
+                "types": ["market", "food_market"],
+                "coordinates": "52.3644,4.8910",
+                "search_query": "amsterdam market food stalls"
+            },
+            {
+                "name": "Stroopwafels Stand",
+                "description": "Street vendor serving Amsterdam's signature sweet waffle treat fresh and warm.",
+                "address": "Dam Square, Amsterdam",
+                "types": ["street_food", "bakery"],
+                "coordinates": "52.3730,4.8925",
+                "search_query": "amsterdam stroopwafel sweet treat"
+            },
+            {
+                "name": "Café de Jaren",
+                "description": "A iconic riverside café perfect for Dutch pancakes and local pastries with waterway views.",
+                "address": "Prins Hendrikkade 20, Amsterdam",
+                "types": ["café", "restaurant"],
+                "coordinates": "52.3758,4.9034",
+                "search_query": "amsterdam cafe pancakes"
+            },
+            {
+                "name": "Cheese Museum",
+                "description": "Experience authentic Dutch cheese culture with tastings of world-famous varieties.",
+                "address": "Prinsengracht 440, Amsterdam",
+                "types": ["museum", "food"],
+                "coordinates": "52.3716,4.8813",
+                "search_query": "amsterdam cheese tasting"
+            },
+            {
+                "name": "Bloemenmarkt Floating Market",
+                "description": "Unique floating flower and plant market selling tulips, bulbs, and Dutch botanical treasures.",
+                "address": "Singel Canal, Amsterdam",
+                "types": ["market", "flower_market"],
+                "coordinates": "52.3643,4.8960",
+                "search_query": "amsterdam flower market floating"
+            }
+        ],
+        "culture_seeker": [
+            {
+                "name": "Anne Frank House",
+                "description": "The poignant historical museum preserving the diary and hiding place of Anne Frank.",
+                "address": "Prinsengracht 263, Amsterdam",
+                "types": ["museum", "historic_site"],
+                "coordinates": "52.3750,4.8840",
+                "search_query": "amsterdam anne frank house"
+            },
+            {
+                "name": "Rijksmuseum",
+                "description": "Netherlands' most famous art museum showcasing Rembrandt, Vermeer, and Dutch golden age masterpieces.",
+                "address": "Museumplein 1, Amsterdam",
+                "types": ["museum", "art_gallery"],
+                "coordinates": "52.3603,4.8852",
+                "search_query": "amsterdam rijks museum art"
+            },
+            {
+                "name": "Van Gogh Museum",
+                "description": "The world's finest collection of Vincent van Gogh paintings and letters in a converted theatre.",
+                "address": "Museumplein 6, Amsterdam",
+                "types": ["museum", "art_gallery"],
+                "coordinates": "52.3585,4.8810",
+                "search_query": "amsterdam van gogh museum"
+            },
+            {
+                "name": "Canal Ring",
+                "description": "UNESCO World Heritage canal system with 17th-century architecture forming Amsterdam's romantic heart.",
+                "address": "Grachten, Amsterdam",
+                "types": ["historic_site", "neighborhood"],
+                "coordinates": "52.3640,4.8860",
+                "search_query": "amsterdam canal architecture historic"
+            },
+            {
+                "name": "Amsterdam Museum",
+                "description": "Comprehensive museum telling the story of Amsterdam from medieval times to present day.",
+                "address": "Kalverstraat 92, Amsterdam",
+                "types": ["museum", "history"],
+                "coordinates": "52.3707,4.8935",
+                "search_query": "amsterdam history museum"
+            }
+        ],
+        "nature_wanderer": [
+            {
+                "name": "Vondelpark",
+                "description": "Amsterdam's most popular park with tree-lined paths, ponds, and open green spaces perfect for wandering.",
+                "address": "Vondelpark, Amsterdam",
+                "types": ["park", "garden"],
+                "coordinates": "52.3584,4.8704",
+                "search_query": "amsterdam vondelpark nature"
+            },
+            {
+                "name": "Waterland Countryside",
+                "description": "Rural landscape just north of Amsterdam with windmills, farmland, and serene waterway scenery.",
+                "address": "Waterland, Amsterdam",
+                "types": ["park", "natural_landscape"],
+                "coordinates": "52.4000,4.9000",
+                "search_query": "amsterdam waterland countryside"
+            },
+            {
+                "name": "Oost Park",
+                "description": "East-side park with lakes, wildlife, and peaceful walking paths away from city crowds.",
+                "address": "Oost Park, Amsterdam",
+                "types": ["park", "nature_reserve"],
+                "coordinates": "52.3596,4.8947",
+                "search_query": "amsterdam east park nature"
+            },
+            {
+                "name": "Botanical Gardens",
+                "description": "Historic gardens with exotic plants, glasshouses, and rare botanical specimens from around the world.",
+                "address": "Plantage Middenlaan 2, Amsterdam",
+                "types": ["garden", "botanical"],
+                "coordinates": "52.3663,4.9134",
+                "search_query": "amsterdam botanical garden plants"
+            },
+            {
+                "name": "Zaanse Schans",
+                "description": "Living museum with working windmills, traditional houses, and pastoral Dutch countryside atmosphere.",
+                "address": "Zaanse Schans, near Amsterdam",
+                "types": ["museum", "historic_village"],
+                "coordinates": "52.4347,4.7863",
+                "search_query": "amsterdam windmills historic village"
+            }
+        ],
+        "checklist_traveler": [
+            {
+                "name": "Windmills of Kinderdijk",
+                "description": "UNESCO World Heritage site with 19 iconic windmills—the most famous Dutch symbol.",
+                "address": "Kinderdijk, near Amsterdam",
+                "types": ["landmark", "historic_site"],
+                "coordinates": "51.8743,4.6456",
+                "search_query": "amsterdam kinderdijk windmills"
+            },
+            {
+                "name": "Dam Square",
+                "description": "Amsterdam's most iconic square surrounded by historic buildings and the Royal Palace.",
+                "address": "Dam Square, Amsterdam",
+                "types": ["landmark", "historic_site"],
+                "coordinates": "52.3730,4.8925",
+                "search_query": "amsterdam dam square palace"
+            },
+            {
+                "name": "Canal Boat Tour",
+                "description": "The quintessential Amsterdam experience—gliding through UNESCO canals seeing the city from the water.",
+                "address": "Various docks, Amsterdam",
+                "types": ["tour", "experience"],
+                "coordinates": "52.3640,4.8860",
+                "search_query": "amsterdam canal boat tour"
+            },
+            {
+                "name": "Begijnhof",
+                "description": "A hidden historic courtyard in the city centre dating back to the 14th century with charming architecture.",
+                "address": "Begijnhof, Amsterdam",
+                "types": ["historic_site", "courtyard"],
+                "coordinates": "52.3690,4.8935",
+                "search_query": "amsterdam begijnhof courtyard historic"
+            },
+            {
+                "name": "St. Nicholas Basilica",
+                "description": "A magnificent neo-Renaissance church overlooking Central Station—iconic Amsterdam landmark.",
+                "address": "Prins Hendrikkade 73, Amsterdam",
+                "types": ["landmark", "church"],
+                "coordinates": "52.3747,4.9024",
+                "search_query": "amsterdam church basilica architecture"
+            }
+        ]
+    },
+    "Singapore": {
+        "food_lover": [
+            {
+                "name": "Hawker Chan's",
+                "description": "The world's cheapest Michelin-star restaurant—authentic Singaporean chicken rice at its finest.",
+                "address": "Chinatown Food Complex, Singapore",
+                "types": ["restaurant", "street_food"],
+                "coordinates": "1.4455,103.8425",
+                "search_query": "singapore hawker food stall"
+            },
+            {
+                "name": "Maxwell Food Centre",
+                "description": "Legendary hawker market where locals queue for iconic dishes and authentic street food.",
+                "address": "Maxwell Road, Singapore",
+                "types": ["market", "food_court"],
+                "coordinates": "1.4442,103.8374",
+                "search_query": "singapore maxwell market food"
+            },
+            {
+                "name": "Jalan Alor Street Food",
+                "description": "A vibrant alley of food stalls serving grilled satay, noodles, and Malaysian-influenced Singaporean cuisine.",
+                "address": "Kuala Lumpur - nearby equivalent in Singapore",
+                "types": ["street_food", "market"],
+                "coordinates": "1.4388,103.8517",
+                "search_query": "singapore street food stalls"
+            },
+            {
+                "name": "Peranakan Museum & Tea House",
+                "description": "Experience traditional Peranakan culture with local delicacies and cultural immersion.",
+                "address": "Peranakan Museum, Singapore",
+                "types": ["museum", "restaurant"],
+                "coordinates": "1.3948,103.8392",
+                "search_query": "singapore peranakan culture food"
+            },
+            {
+                "name": "Satay by the Bay",
+                "description": "Beachfront dining with grilled satay, local seafood, and sunset views over Marina Bay.",
+                "address": "Marina Bay, Singapore",
+                "types": ["restaurant", "food_court"],
+                "coordinates": "1.3544,103.8597",
+                "search_query": "singapore satay bay marina"
+            }
+        ],
+        "culture_seeker": [
+            {
+                "name": "National Museum of Singapore",
+                "description": "Comprehensive museum presenting Singapore's rich history from colonial times to modern nation.",
+                "address": "National Museum Road, Singapore",
+                "types": ["museum", "history"],
+                "coordinates": "1.2955,103.8173",
+                "search_query": "singapore national museum history"
+            },
+            {
+                "name": "Thian Hock Keng Temple",
+                "description": "Singapore's oldest Chinese temple with intricate architecture and spiritual significance.",
+                "address": "Telok Ayer Street, Singapore",
+                "types": ["temple", "historic_site"],
+                "coordinates": "1.4388,103.8432",
+                "search_query": "singapore temple architecture historic"
+            },
+            {
+                "name": "Singapore Art Museum",
+                "description": "World-class contemporary and classical Asian art in a converted Catholic mission building.",
+                "address": "National Library Building, Singapore",
+                "types": ["museum", "art_gallery"],
+                "coordinates": "1.3527,103.8547",
+                "search_query": "singapore art museum contemporary"
+            },
+            {
+                "name": "Chinatown Heritage Centre",
+                "description": "Museum preserving the stories and experiences of Chinese immigrants who built Singapore.",
+                "address": "Chinatown, Singapore",
+                "types": ["museum", "cultural_center"],
+                "coordinates": "1.4436,103.8434",
+                "search_query": "singapore chinatown heritage"
+            },
+            {
+                "name": "Sri Mariamman Temple",
+                "description": "Singapore's oldest Hindu temple with stunning gopuram tower and vibrant Hindu culture.",
+                "address": "South Bridge Road, Singapore",
+                "types": ["temple", "historic_site"],
+                "coordinates": "1.4400,103.8444",
+                "search_query": "singapore temple hindu"
+            }
+        ],
+        "nature_wanderer": [
+            {
+                "name": "Singapore Botanic Gardens",
+                "description": "UNESCO World Heritage gardens with lush landscapes, orchid collections, and serene pathways.",
+                "address": "Napier Road, Singapore",
+                "types": ["garden", "botanical"],
+                "coordinates": "1.3136,103.8159",
+                "search_query": "singapore botanic gardens nature"
+            },
+            {
+                "name": "Gardens by the Bay",
+                "description": "Futuristic gardens with iconic Supertrees, light shows, and botanical wonders.",
+                "address": "Marina Bay, Singapore",
+                "types": ["garden", "park"],
+                "coordinates": "1.3644,103.8641",
+                "search_query": "singapore gardens bay nature"
+            },
+            {
+                "name": "MacRitchie Reservoir",
+                "description": "Nature reserve with rainforest walks, tree canopy bridges, and freshwater views.",
+                "address": "MacRitchie Reservoir, Singapore",
+                "types": ["nature_reserve", "park"],
+                "coordinates": "1.3453,103.8324",
+                "search_query": "singapore macritchie forest nature"
+            },
+            {
+                "name": "East Coast Park",
+                "description": "Beachfront park with sandy stretches, cycle paths, and seaside serenity.",
+                "address": "East Coast Park, Singapore",
+                "types": ["park", "beach"],
+                "coordinates": "1.3012,103.9603",
+                "search_query": "singapore beach park coastal"
+            },
+            {
+                "name": "Pulau Ubin Island",
+                "description": "An off-the-beaten-path island with coastal cliffs, forested paths, and tranquil getaway vibes.",
+                "address": "Pulau Ubin, Singapore",
+                "types": ["island", "nature_reserve"],
+                "coordinates": "1.4024,103.9603",
+                "search_query": "singapore island nature forest"
+            }
+        ],
+        "checklist_traveler": [
+            {
+                "name": "Merlion Statue",
+                "description": "Singapore's most iconic monument—a mythical lion-fish hybrid overlooking Marina Bay.",
+                "address": "Merlion Park, Singapore",
+                "types": ["landmark", "monument"],
+                "coordinates": "1.3456,103.8542",
+                "search_query": "singapore merlion statue icon"
+            },
+            {
+                "name": "Marina Bay Sands",
+                "description": "Singapore's most recognizable hotel with sky-high rooftop infinity pool and city views.",
+                "address": "Marina Bay Sands, Singapore",
+                "types": ["landmark", "hotel"],
+                "coordinates": "1.2858,103.8581",
+                "search_query": "singapore marina bay sands"
+            },
+            {
+                "name": "Singapore Flyer",
+                "description": "World's tallest observation wheel offering 360-degree views of the city and surroundings.",
+                "address": "Marina Bay, Singapore",
+                "types": ["landmark", "observation_wheel"],
+                "coordinates": "1.3715,103.8554",
+                "search_query": "singapore flyer observation wheel"
+            },
+            {
+                "name": "Sentosa Island",
+                "description": "A major resort island with beaches, attractions, and iconic Singapore experiences.",
+                "address": "Sentosa Island, Singapore",
+                "types": ["island", "resort"],
+                "coordinates": "1.2495,103.8310",
+                "search_query": "singapore sentosa island resort"
+            },
+            {
+                "name": "Raffles Hotel",
+                "description": "Historic iconic hotel in Singapore's colonial district where the Singapore Sling cocktail was invented.",
+                "address": "Beach Road, Singapore",
+                "types": ["landmark", "historic_hotel"],
+                "coordinates": "1.3553,103.8567",
+                "search_query": "singapore raffles hotel historic"
+            }
+        ]
+    }
+}
+
+def _get_fallback_persona_places(airport_city: str, persona_key: str) -> List[dict]:
+    """Get fallback places for when Gemini is unavailable."""
+    city_places = FALLBACK_PERSONA_PLACES.get(airport_city, {})
+    return city_places.get(persona_key, [])
+
 
 def _cache_get(prompt: str):
     key = hashlib.md5(prompt.encode()).hexdigest()
@@ -277,8 +796,9 @@ Return ONLY a valid JSON array, nothing else."""
             places = json.loads(text)
             return places[:5]
         except Exception as e:
-            print(f"WARNING: Gemini persona places generation failed: {e}")
-            return []
+            print(f"WARNING: Gemini persona places generation failed: {e}, using fallback places")
+            fallback = _get_fallback_persona_places(airport_city, persona_key)
+            return fallback if fallback else []
 
     def _fallback_activities(self, airport_city: str) -> List[dict]:
         return [

@@ -89,11 +89,16 @@ class RouteService:
             # Add airport as final destination
             all_stops.append(("Airport (Return)", airport_coords["lat"], airport_coords["lng"]))
             
+            # Build waypoints for ALL stops (airport + places + return airport)
+            # This is done FIRST so markers show on map even if route calculation fails
+            waypoints = []
+            for i, (name, lat, lng) in enumerate(all_stops):
+                waypoints.append({"lat": lat, "lng": lng, "name": name})
+            
             # Calculate legs between consecutive stops
             total_distance = 0
             total_duration = 0
             legs = []
-            waypoints = []
             all_polylines = []
             
             travel_mode = "TRANSIT" if mode == "transit" else "DRIVE"
@@ -170,16 +175,6 @@ class RouteService:
                         polyline_str = route["polyline"].get("encodedPolyline", "")
                         if polyline_str:
                             all_polylines.append(polyline_str)
-                
-                # Add waypoint
-                waypoints.append({"lat": from_lat, "lng": from_lng, "name": from_name})
-            
-            # Add final waypoint
-            waypoints.append({
-                "lat": all_stops[-1][1],
-                "lng": all_stops[-1][2],
-                "name": all_stops[-1][0]
-            })
             
             return {
                 "total_distance_meters": total_distance,
