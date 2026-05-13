@@ -11,8 +11,6 @@ export const Header = () => (
         GateAway
       </span>
     </div>
-    <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-      Prototype · v0.1
-    </span>
+
   </header>
 );

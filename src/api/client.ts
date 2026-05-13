@@ -205,6 +205,23 @@ export async function extractFlightsFromFile(file: File): Promise<FlightExtractR
   return (await response.json()) as FlightExtractResponse;
 }
 
+export interface FeedbackInput {
+  rating?: number;
+  email?: string;
+  message?: string;
+}
+
+export async function submitFeedback(input: FeedbackInput): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to submit feedback: HTTP ${response.status}`);
+  }
+}
+
 /**
  * Check if backend is available
  * 
