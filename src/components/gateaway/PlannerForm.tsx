@@ -144,7 +144,6 @@ export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlig
                 disabled={departureLookupLoading}
                 className="px-3 py-2 text-sm bg-secondary text-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
-                {departureLookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look up"}
               </button>
             )}
           </div>
@@ -155,38 +154,6 @@ export const PlannerForm = ({ arrival, departure, airport, passport, arrivalFlig
             </div>
           )}
         </Field>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-4">
-        <div>
-          <label className="block text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground mb-3">
-            How do you travel?
-          </label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => onChange({ transportMode: "transit" })}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                transportMode === "transit"
-                  ? "bg-foreground text-background"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
-              }`}
-            >
-              🚌 Public Transport
-            </button>
-            <button
-              type="button"
-              onClick={() => onChange({ transportMode: "driving" })}
-              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
-                transportMode === "driving"
-                  ? "bg-foreground text-background"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
-              }`}
-            >
-              🚗 Car/Taxi
-            </button>
-          </div>
-        </div>
       </div>
 
       <div className="mt-6 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">

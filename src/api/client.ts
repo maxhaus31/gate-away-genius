@@ -66,6 +66,24 @@ export interface PlaceOption {
   download_location?: string;  // Unsplash download tracking endpoint
 }
 
+export interface FlightInfo {
+  flight_number: string;
+  date: string;
+  scheduled_arrival?: string;
+  actual_arrival?: string;
+  delay_minutes?: number;
+  status: string;
+  terminal: string;
+  pier: string;
+  scheduled_departure?: string;
+}
+
+export interface PlanFlightOverview {
+  inbound: FlightInfo;
+  outbound: FlightInfo;
+  layover_duration_minutes: number;
+}
+
 export interface PlanPersona {
   key: string;
   label: string;

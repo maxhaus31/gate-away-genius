@@ -48,8 +48,8 @@ export const RouteMap = ({ routeData, airportCode }: Props) => {
 
   useEffect(() => {
     // Build Google Maps Embed URL from waypoints
-    if (routeData?.waypoints && routeData.waypoints.length > 0) {
-      const waypoints = routeData.waypoints;
+    if (routeData?.route?.waypoints && routeData.route.waypoints.length > 0) {
+      const waypoints = routeData.route.waypoints;
       
       // Google Maps Embed API has limited support for waypoints
       // Build a directions URL that shows the route with stops
