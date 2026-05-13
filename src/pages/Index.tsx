@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Header } from "@/components/gateaway/Header";
+import { FlightOverview } from "@/components/gateaway/FlightOverview";
 import { PlannerForm } from "@/components/gateaway/PlannerForm";
 import { Verdict } from "@/components/gateaway/Verdict";
 import { Timeline } from "@/components/gateaway/Timeline";
@@ -27,21 +28,20 @@ const PERSONA_META: Record<string, { label: string; description: string }> = {
 
 // Extends gateaway-data.PlanResult with backend-only fields so components stay typed
 type PlanResult = GDPlanResult & Pick<PlanResponse,
-  "verdict_description" | "timeline" | "activity_itinerary" |
+  "flight_overview" | "verdict_description" | "timeline" | "activity_itinerary" |
   "available_time_minutes" | "place_options" | "safety_buffer_breakdown"
 >;
 
 const Index = () => {
-  // arrival/departure (HH:MM) are kept for the time-picker UI and Timeline display only —
-  // they are NOT sent to the backend.  The backend derives times from Schiphol using the
-  // flight numbers below.  Lovable redesign: replace with inbound_flight / outbound_flight inputs.
+  // arrival/departure (HH:MM) kept for the Timeline display only — not sent to backend
   const [arrival, setArrival] = useState("10:30");
   const [departure, setDeparture] = useState("16:15");
-  const [airport, setAirport] = useState<AirportCode>("LIS");
-  const [passport, setPassport] = useState<PassportRegion>("EU");
-  // Renamed from arrivalFlight / departureFlight to match the backend contract
+  const [layoverAirport, setLayoverAirport] = useState<AirportCode>("AMS");
+  const [passportType, setPassportType] = useState<PassportRegion>("EU");
   const [inboundFlight, setInboundFlight] = useState<string>("");
   const [outboundFlight, setOutboundFlight] = useState<string>("");
+  const [inboundDate, setInboundDate] = useState<string>("");
+  const [outboundDate, setOutboundDate] = useState<string>("");
   const [transportMode, setTransportMode] = useState<"transit" | "driving">("transit");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,21 +73,24 @@ const Index = () => {
 
       try {
         const response = await submitPlannerForm({
-          inbound_flight: inboundFlight,
+          inbound_flight:  inboundFlight,
           outbound_flight: outboundFlight,
-          airport_code: airport,
-          passport_region: passport,
-          transport_mode: transportMode,
+          inbound_date:    inboundDate  || undefined,
+          outbound_date:   outboundDate || undefined,
+          layover_airport: layoverAirport,
+          passport_type:   passportType,
+          transport_mode:  transportMode,
         });
 
+        const fo = response.flight_overview;
         const adaptedPlan: PlanResult = {
           ...response,
           airport: response.airport || {
-            code: airport as AirportCode,
-            city: AIRPORTS[airport].city,
-            name: AIRPORTS[airport].name,
-            country: AIRPORTS[airport].country,
-            flag: AIRPORTS[airport].flag,
+            code: layoverAirport as AirportCode,
+            city: AIRPORTS[layoverAirport].city,
+            name: AIRPORTS[layoverAirport].name,
+            country: AIRPORTS[layoverAirport].country,
+            flag: AIRPORTS[layoverAirport].flag,
             transportToCityMin: 0,
             transportLabel: "",
             reentrySecurityMin: 0,
@@ -95,14 +98,14 @@ const Index = () => {
             checkinCutoffMin: 0,
             vibe: ""
           },
-          totalMinutes: response.total_minutes,
-          bufferMinutes: response.buffer_minutes,
-          cityTimeMinutes: response.city_time_minutes,
-          bufferBreakdown: response.buffer_breakdown,
-          usableMinutes: response.usable_minutes,
-          immigrationBuffer: response.immigration_buffer,
-          headline: response.headline,
-          message: response.verdict_description,
+          totalMinutes:     fo.total_layover_minutes,
+          bufferMinutes:    fo.airport_buffer_minutes,
+          cityTimeMinutes:  fo.city_time_minutes,
+          bufferBreakdown:  response.buffer_breakdown ?? [],
+          usableMinutes:    response.usable_minutes ?? 0,
+          immigrationBuffer: 0,
+          headline:  response.headline  ?? "",
+          message:   response.verdict_description ?? "",
         };
 
         setPlan(adaptedPlan);
@@ -116,7 +119,7 @@ const Index = () => {
     };
 
     fetchPlan();
-  }, [submitted, inboundFlight, outboundFlight, airport, passport, transportMode]);
+  }, [submitted, inboundFlight, outboundFlight, inboundDate, outboundDate, layoverAirport, passportType, transportMode]);
 
   // Fetch persona-tailored places whenever the user picks a persona
   useEffect(() => {
@@ -135,7 +138,7 @@ const Index = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            airport_code: airport,
+            airport_code: layoverAirport,
             persona_key: selectedPersona,
             persona_label: meta.label,
             persona_description: meta.description,
@@ -168,7 +171,7 @@ const Index = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          airport_code: airport,
+          airport_code: layoverAirport,
           place_ids: selectedPlaces.map(p => p.place_id),
           place_names: selectedPlaces.map(p => p.name),
           place_coordinates: selectedPlaces.map(p => p.coordinates),
@@ -214,20 +217,22 @@ const Index = () => {
         <PlannerForm
           arrival={arrival}
           departure={departure}
-          airport={airport}
-          passport={passport}
+          airport={layoverAirport}
+          passport={passportType}
           arrivalFlight={inboundFlight}
           departureFlight={outboundFlight}
+          inboundDate={inboundDate}
+          outboundDate={outboundDate}
           transportMode={transportMode}
           onChange={(p) => {
-            if (p.arrival !== undefined) setArrival(p.arrival);
-            if (p.departure !== undefined) setDeparture(p.departure);
-            if (p.airport !== undefined) setAirport(p.airport as AirportCode);
-            if (p.passport !== undefined) setPassport(p.passport as PassportRegion);
-            // PlannerForm still uses arrivalFlight/departureFlight internally;
-            // map to the new inbound/outbound names for the API call
+            if (p.arrival !== undefined)       setArrival(p.arrival);
+            if (p.departure !== undefined)     setDeparture(p.departure);
+            if (p.airport !== undefined)       setLayoverAirport(p.airport as AirportCode);
+            if (p.passport !== undefined)      setPassportType(p.passport as PassportRegion);
             if (p.arrivalFlight !== undefined) setInboundFlight(p.arrivalFlight);
             if (p.departureFlight !== undefined) setOutboundFlight(p.departureFlight);
+            if (p.inboundDate !== undefined)   setInboundDate(p.inboundDate);
+            if (p.outboundDate !== undefined)  setOutboundDate(p.outboundDate);
             if (p.transportMode !== undefined) setTransportMode(p.transportMode);
           }}
           onSubmit={() => setSubmitted(true)}
@@ -265,7 +270,8 @@ const Index = () => {
       {/* Results */}
       {plan && !loading && (
         <section className="mt-6 space-y-6">
-          <Verdict plan={plan} />
+          <FlightOverview overview={plan.flight_overview} />
+          <Verdict plan={plan} flightOverview={plan.flight_overview} />
 
           <PersonaSelector selected={selectedPersona} onSelect={setSelectedPersona} />
 
@@ -330,7 +336,7 @@ const Index = () => {
                   <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
                     <TravelTimesBreakdown routeData={routeData} />
                   </div>
-                  <DebugMap routeData={routeData} airportCode={airport} />
+                  <DebugMap routeData={routeData} airportCode={layoverAirport} />
                 </>
               )}
             </div>

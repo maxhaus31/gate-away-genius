@@ -1,14 +1,17 @@
 import type { PlanResult } from "@/lib/gateaway-data";
 import { formatDuration } from "@/lib/gateaway-data";
+import type { PlanFlightOverview } from "@/api/client";
 
 const VERDICT_COPY = {
-  safe: { label: "You're good to go", dot: "bg-success", text: "text-success-foreground", bg: "bg-success" },
-  tight: { label: "Tight — but doable", dot: "bg-warning", text: "text-warning-foreground", bg: "bg-warning" },
-  stay: { label: "Stay inside the airport", dot: "bg-danger", text: "text-danger-foreground", bg: "bg-danger" },
+  safe:         { label: "You're good to go",         text: "text-success-foreground", bg: "bg-success" },
+  tight:        { label: "Tight — but doable",         text: "text-warning-foreground", bg: "bg-warning" },
+  not_possible: { label: "Stay inside the airport",    text: "text-danger-foreground",  bg: "bg-danger"  },
+  stay:         { label: "Stay inside the airport",    text: "text-danger-foreground",  bg: "bg-danger"  },
 } as const;
 
-export const Verdict = ({ plan }: { plan: PlanResult }) => {
-  const v = VERDICT_COPY[plan.verdict];
+export const Verdict = ({ plan, flightOverview }: { plan: PlanResult; flightOverview?: PlanFlightOverview }) => {
+  const v = VERDICT_COPY[plan.verdict as keyof typeof VERDICT_COPY] ?? VERDICT_COPY.not_possible;
+  const fo = flightOverview;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
@@ -31,9 +34,15 @@ export const Verdict = ({ plan }: { plan: PlanResult }) => {
       </p>
 
       {/* Boarding-pass stat row */}
-      <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
         <Stat label="Total layover" value={formatDuration(plan.totalMinutes)} />
-        <Stat label="Airport buffers" value={`−${formatDuration(plan.bufferMinutes)}`} muted />
+        <Stat
+          label="Airport buffers"
+          value={`−${formatDuration(plan.bufferMinutes)}`}
+          note={fo ? `incl. ${formatDuration(fo.security_reentry_minutes)} security re-entry` : undefined}
+          muted
+        />
+        <Stat label="Transport (×2)" value={fo ? `−${formatDuration(fo.transport_minutes)}` : "—"} muted />
         <Stat label="Yours in the city" value={formatDuration(plan.cityTimeMinutes)} accent />
       </div>
     </div>
@@ -43,11 +52,13 @@ export const Verdict = ({ plan }: { plan: PlanResult }) => {
 const Stat = ({
   label,
   value,
+  note,
   accent,
   muted,
 }: {
   label: string;
   value: string;
+  note?: string;
   accent?: boolean;
   muted?: boolean;
 }) => (
@@ -62,5 +73,6 @@ const Stat = ({
     >
       {value}
     </div>
+    {note && <p className="mt-1 text-xs text-muted-foreground">{note}</p>}
   </div>
 );

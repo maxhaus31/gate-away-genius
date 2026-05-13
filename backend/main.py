@@ -13,6 +13,7 @@ import config
 from models import PlannerInput, PlannerOutput, RouteResponse, PlaceOption, PersonaPlacesRequest
 from services.planner_service import generate_plan, get_persona_place_options
 from services.schiphol_api import SchipholService
+from services.aerodatabox_api import AeroDataBoxService
 from services.route_service import RouteService
 from pydantic import BaseModel
 from typing import List
@@ -183,21 +184,32 @@ async def get_airport_details(airport_code: str):
 
 
 @app.get("/api/flights/lookup")
-async def lookup_flight(flight_number: str, date: str = None):
+async def lookup_flight(
+    flight_number: str,
+    date: str = None,
+    airport_code: str = "AMS",
+    direction: str = "inbound",
+):
     """
-    Look up a Schiphol flight by IATA name (e.g. "KL1234").
+    Look up a flight by IATA number.
+
+    Routes to Schiphol (AMS) or AeroDataBox (LIS/SIN).
 
     Query params:
-    - flight_number: IATA flight name (e.g., "KL1234")
-    - date: Schedule date YYYY-MM-DD (defaults to today)
-
-    Returns flight details including scheduled times, terminal, gate, and delay.
+    - flight_number: IATA flight number (e.g., "KL1234")
+    - date:          Schedule date YYYY-MM-DD (defaults to today)
+    - airport_code:  Layover airport "AMS" | "LIS" | "SIN" (default "AMS")
+    - direction:     "inbound" or "outbound"
     """
     if not flight_number:
         raise HTTPException(status_code=400, detail="flight_number is required")
 
     try:
-        result = await SchipholService.get_flight(flight_number, date)
+        if airport_code == "AMS":
+            result = await SchipholService.get_flight(flight_number, date)
+        else:
+            result = await AeroDataBoxService.get_flight(flight_number, date, airport_code, direction)
+
         if result.get("is_mock"):
             raise HTTPException(
                 status_code=404,
