@@ -71,7 +71,7 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
         title: wp.name,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#ffffff',
+          fillColor: '#FFD700',  // yellow background
           fillOpacity: 1,
           strokeColor: '#000000',
           strokeWeight: 1,
@@ -79,7 +79,7 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
         },
         label: {
           text: `${index + 1}`,
-          color: 'black',
+          color: 'black',        // black text on yellow works well
           fontWeight: 'bold',
           fontSize: '12px',
         },
@@ -87,15 +87,11 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
 
       // Rich info window with coordinates
       const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div style="padding: 12px; font-family: monospace; font-size: 12px;">
-            <div style="font-weight: bold; margin-bottom: 8px;">${wp.name}</div>
-            <div>Lat: ${wp.lat}</div>
-            <div>Lng: ${wp.lng}</div>
-            <div style="margin-top: 8px; color: #666;">Index: ${index}</div>
-          </div>
-        `,
-      });
+      content: `
+        <div style="padding: 10px; font-family: monospace; font-size: 12px; color: #333;">
+          <div style="font-weight: bold; margin-bottom: 8px; color: #e11d48;">${wp.name}</div>
+        </div>`,
+    });
 
       marker.addListener("click", () => {
         infoWindow.open(mapInstance.current, marker);

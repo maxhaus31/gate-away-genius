@@ -82,16 +82,24 @@ export const PlaceOptions = ({ places, selectedIds, onPlaceSelect, onPlaceDesele
                           <span className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                           </span>
-                          <button
+                          <div
                             onClick={(e) => {
                               e.stopPropagation();
                               onPlaceDeselect(place.place_id);
                             }}
-                            className="ml-1 p-0.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+                            className="ml-1 p-0.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded cursor-pointer transition-colors"
                             title="Remove place"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation();
+                                onPlaceDeselect(place.place_id);
+                              }
+                            }}
                           >
                             <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                          </button>
+                          </div>
                         </div>
                       )}
                     </div>
