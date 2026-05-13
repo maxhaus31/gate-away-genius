@@ -8,10 +8,10 @@ const PERSONAS: PlanPersona[] = [
 ];
 
 const PERSONA_ICONS: Record<string, string> = {
-  food_lover: "🍜",
-  culture_seeker: "🏛️",
-  nature_wanderer: "🌿",
-  checklist_traveler: "✅",
+  food_lover: "/avatars/foodlover1.png",
+  culture_seeker: "/avatars/cultureseeker1.png",
+  nature_wanderer: "/avatars/naturewanderer1.png",
+  checklist_traveler: "/avatars/checklisttraveler1.png",
 };
 
 export const PersonaSelector = ({
@@ -36,15 +36,21 @@ export const PersonaSelector = ({
               key={persona.key}
               type="button"
               onClick={() => onSelect(persona.key)}
-              className={`flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all ${
+              className={`flex flex-row items-center gap-4 rounded-xl border p-4 text-left transition-all ${
                 isSelected
                   ? "border-primary bg-primary/10 ring-1 ring-primary"
                   : "border-border bg-card hover:border-primary/40 hover:bg-secondary/40"
               }`}
             >
-              <span className="text-2xl">{PERSONA_ICONS[persona.key] ?? "✈️"}</span>
-              <span className="text-sm font-semibold text-foreground">{persona.label}</span>
-              <span className="text-xs text-muted-foreground">{persona.description}</span>
+              <img 
+                src={PERSONA_ICONS[persona.key]} 
+                alt={persona.label}
+                className="w-20 h-20 flex-shrink-0 object-cover rounded"
+              />
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-sm font-semibold text-foreground">{persona.label}</span>
+                <span className="text-xs text-muted-foreground">{persona.description}</span>
+              </div>
             </button>
           );
         })}
