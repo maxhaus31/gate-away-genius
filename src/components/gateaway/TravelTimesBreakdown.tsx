@@ -17,6 +17,8 @@ interface RouteData {
       line_text_color?: string;
       departure_stop?: string;
       arrival_stop?: string;
+      headsign?: string;
+      trip_short_text?: string;
       segments?: Array<{
         line_name?: string;
         line_color?: string;
@@ -26,6 +28,9 @@ interface RouteData {
         departure_stop?: string;
         arrival_stop?: string;
         headsign?: string;
+        trip_short_text?: string;
+        departure_time?: string;
+        arrival_time?: string;
       }>;
     };
   }>;
@@ -250,9 +255,27 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
                             <span>{transitDetails.summary || "Transit route"}</span>
                           </div>
                           <div className="mt-3 space-y-2 text-sm text-foreground/90">
+                            {(transitDetails.trip_short_text || transitDetails.headsign) && (
+                              <div className="rounded-md bg-muted/40 px-3 py-2">
+                                {transitDetails.trip_short_text && (
+                                  <span className="font-medium">Trip {transitDetails.trip_short_text}</span>
+                                )}
+                                {transitDetails.trip_short_text && transitDetails.headsign && <span> · </span>}
+                                {transitDetails.headsign && (
+                                  <span>Headsign: {transitDetails.headsign}</span>
+                                )}
+                              </div>
+                            )}
+
                             {transitDetails.departure_stop && transitDetails.arrival_stop && (
                               <div className="rounded-md bg-muted/40 px-3 py-2">
                                 {transitDetails.departure_stop} → {transitDetails.arrival_stop}
+                              </div>
+                            )}
+
+                            {transitDetails.arrival_stop && (
+                              <div className="rounded-md border border-dashed border-border px-3 py-2">
+                                Get off at <span className="font-semibold">{transitDetails.arrival_stop}</span>
                               </div>
                             )}
 
@@ -272,14 +295,23 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
                                     />
                                     {segment.line_name || segment.vehicle_name || "Transit"}
                                   </div>
+                                  {(segment.trip_short_text || segment.headsign) && (
+                                    <div className="mt-1 text-xs text-muted-foreground">
+                                      {segment.trip_short_text && <span>Trip {segment.trip_short_text}</span>}
+                                      {segment.trip_short_text && segment.headsign && <span> · </span>}
+                                      {segment.headsign && <span>{segment.headsign}</span>}
+                                    </div>
+                                  )}
                                   {(segment.departure_stop || segment.arrival_stop) && (
                                     <div className="mt-1 text-xs text-foreground">
                                       {segment.departure_stop || "Start"} → {segment.arrival_stop || "End"}
                                     </div>
                                   )}
-                                  {segment.headsign && (
-                                    <div className="mt-1 text-xs text-foreground">
-                                      Headsign: {segment.headsign}
+                                  {(segment.departure_time || segment.arrival_time) && (
+                                    <div className="mt-1 text-xs text-muted-foreground">
+                                      {segment.departure_time || ""}
+                                      {segment.departure_time && segment.arrival_time ? " → " : ""}
+                                      {segment.arrival_time || ""}
                                     </div>
                                   )}
                                 </div>

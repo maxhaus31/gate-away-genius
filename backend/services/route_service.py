@@ -332,6 +332,9 @@ class RouteService:
             departure_stop = stop_details.get("departureStop") or step.get("departureStop") or {}
             arrival_stop = stop_details.get("arrivalStop") or step.get("arrivalStop") or {}
             vehicle = transit_line.get("vehicle", {})
+            departure_time = stop_details.get("departureTime")
+            arrival_time = stop_details.get("arrivalTime")
+            trip_short_text = transit_details.get("tripShortText", "")
 
             line_name = (
                 transit_line.get("nameShort")
@@ -354,6 +357,9 @@ class RouteService:
                 "departure_stop": departure_stop_name,
                 "arrival_stop": arrival_stop_name,
                 "headsign": transit_details.get("headsign", ""),
+                "trip_short_text": trip_short_text,
+                "departure_time": departure_time.get("time", {}).get("text") if isinstance(departure_time, dict) else "",
+                "arrival_time": arrival_time.get("time", {}).get("text") if isinstance(arrival_time, dict) else "",
             })
 
         if not segments:
@@ -368,4 +374,6 @@ class RouteService:
             "segments": segments,
             "departure_stop": first_segment.get("departure_stop", ""),
             "arrival_stop": last_segment.get("arrival_stop", ""),
+            "trip_short_text": first_segment.get("trip_short_text", ""),
+            "headsign": first_segment.get("headsign", ""),
         }

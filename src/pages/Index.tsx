@@ -299,6 +299,31 @@ const Index = () => {
             />
           )}
 
+          {/* My Plan - appears once user has added at least one place */}
+          {selectedPlaces.length > 0 && (
+            <MyPlan
+              places={selectedPlaces}
+              cityTimeMinutes={plan.cityTimeMinutes}
+              onRemove={(id) =>
+                setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== id))
+            }
+            onMoveUp={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                return next;
+              })
+            }
+            onMoveDown={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                return next;
+              })
+            }
+          />
+          )}
+
           {/* Plan Trip Button - appears when places selected */}
           {selectedPlaces.length > 0 && !routeData && (
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col items-center gap-4">
@@ -340,31 +365,6 @@ const Index = () => {
                 </>
               )}
             </div>
-          )}
-
-          {/* My Plan - appears once user has added at least one place */}
-          {selectedPlaces.length > 0 && (
-            <MyPlan
-              places={selectedPlaces}
-              cityTimeMinutes={plan.cityTimeMinutes}
-              onRemove={(id) =>
-                setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== id))
-            }
-            onMoveUp={(index) =>
-              setSelectedPlaces((prev) => {
-                const next = [...prev];
-                [next[index - 1], next[index]] = [next[index], next[index - 1]];
-                return next;
-              })
-            }
-            onMoveDown={(index) =>
-              setSelectedPlaces((prev) => {
-                const next = [...prev];
-                [next[index], next[index + 1]] = [next[index + 1], next[index]];
-                return next;
-              })
-            }
-          />
           )}
 
           {/* Activity Itinerary Flowchart — only when timeline data available */}
