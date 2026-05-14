@@ -1,10 +1,30 @@
 /**
  * API Client for GateAway Genius Backend
- * 
- * Handles all communication with the backend API at http://localhost:8000
+ *
+ * Handles all communication with the backend API.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const DEFAULT_API_BASE_URL = "http://localhost:8000";
+
+function normalizeApiBaseUrl(value?: string): string {
+  const trimmed = value?.trim().replace(/\/+$/, "");
+
+  if (!trimmed) {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimmed)) {
+    return `http://${trimmed}`;
+  }
+
+  return `https://${trimmed}`;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 /**
  * Request types (matches backend models.py)

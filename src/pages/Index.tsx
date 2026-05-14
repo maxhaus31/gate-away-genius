@@ -14,11 +14,9 @@ import { DebugMap } from "@/components/gateaway/DebugMap";
 import { TravelTimesBreakdown } from "@/components/gateaway/TravelTimesBreakdown";
 import { PersonaSelector } from "@/components/gateaway/PersonaSelector";
 import { FeedbackForm } from "@/components/gateaway/FeedbackForm";
-import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
+import { API_BASE_URL, submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion, AIRPORTS } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const PERSONA_META: Record<string, { label: string; description: string }> = {
   food_lover: { label: "Food Lover", description: "Travels to discover local cuisine, cafés, markets, and memorable dining experiences." },
@@ -306,7 +304,7 @@ const Index = () => {
                 <h3 className="font-semibold text-red-900">Could not generate plan</h3>
                 <p className="mt-1 text-sm text-red-700">{error}</p>
                 <p className="mt-3 text-xs text-red-600">
-                  💡 Tip: Make sure the backend is running on http://localhost:8000
+                  💡 Tip: Make sure the backend is reachable at {API_BASE_URL}
                 </p>
               </div>
             </div>
