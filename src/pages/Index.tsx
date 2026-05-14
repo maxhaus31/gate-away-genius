@@ -204,6 +204,8 @@ const Index = () => {
           transport_mode: transportMode,
           available_minutes: plan.cityTimeMinutes,
           time_per_place: 45,
+          total_layover_minutes: plan.totalMinutes,
+          airport_buffer_minutes: plan.bufferMinutes,
         }),
       });
 

@@ -62,6 +62,18 @@ const formatDistance = (meters?: number): string => {
   return `${(meters / 1000).toFixed(1)}km`;
 };
 
+const getTimingMessage = (remainingMinutes: number): string => {
+  if (remainingMinutes < -45) {
+    return "You're over budget — drop a stop to make this work.";
+  } else if (remainingMinutes < 0) {
+    return "A little over — skip one stop or pick up the pace.";
+  } else if (remainingMinutes < 45) {
+    return "Time is short, so keep moving and don't stop too long.";
+  } else {
+    return "Plenty of time — soak it all in.";
+  }
+};
+
 export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
   const itinerary = routeData?.itinerary || [];
   const timingSummary = routeData?.timing_summary;
@@ -131,7 +143,7 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
               Travel Time
             </div>
-            <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
+            <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-muted-foreground sm:text-4xl">
               {formatDuration(timingSummary.total_travel_minutes)}
             </div>
           </div>
@@ -139,7 +151,7 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
               Activity Time
             </div>
-            <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-primary sm:text-4xl">
+            <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
               {formatDuration(timingSummary.total_activity_minutes)}
             </div>
           </div>
@@ -155,9 +167,22 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
               Time Remaining
             </div>
-            <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-muted-foreground sm:text-4xl">
-              {formatDuration(timingSummary.remaining_minutes)}
+            <div
+              className={`mt-3 text-3xl font-medium tracking-tight tabular-nums sm:text-4xl ${
+                timingSummary.remaining_minutes < 0 ? 'text-red-500' : 'text-yellow-500'
+              }`}
+            >
+              {timingSummary.remaining_minutes < 0
+                ? `−${formatDuration(Math.abs(timingSummary.remaining_minutes))}`
+                : formatDuration(timingSummary.remaining_minutes)}
             </div>
+            <p
+              className={`mt-3 text-sm ${
+                timingSummary.remaining_minutes < 0 ? 'text-red-500' : 'text-muted-foreground'
+              }`}
+            >
+              {getTimingMessage(timingSummary.remaining_minutes)}
+            </p>
           </div>
         </div>
       )}
