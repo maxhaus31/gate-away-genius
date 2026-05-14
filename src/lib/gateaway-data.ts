@@ -130,15 +130,15 @@ export const SUGGESTIONS: Record<AirportCode, Suggestion[]> = {
 export const PASSPORT_LABELS: Record<PassportRegion, { label: string; note: string }> = {
   EU: {
     label: "EU / Schengen",
-    note: "Frictionless re-entry at Lisbon and Amsterdam.",
+    note: "Frictionless re-entry at your airport.",
   },
   US: {
     label: "United States",
-    note: "Visa-free short stays — expect standard immigration queues.",
+    note: "Frictionless re-entry at your airport.",
   },
   OTHER: {
     label: "Other",
-    note: "Add ~15 min buffer for immigration and possible visa checks.",
+    note: "Frictionless re-entry at your airport.",
   },
 };
 
@@ -194,11 +194,11 @@ export function buildPlan(
   let headline: string;
   let message: string;
 
-  if (usable < roundTripTransport + 30) {
+  if (cityTime < 30) {
     verdict = "stay";
     headline = "Stay airside on this one.";
     message = `By the time you cleared immigration and rode into ${airport.city}, you'd be turning right back around. Grab a proper meal in the terminal — ${airport.name} is genuinely nice — and save the city for the next layover.`;
-  } else if (cityTime < 75) {
+  } else if (cityTime < 90) {
     verdict = "tight";
     headline = `Doable — pick one thing in ${airport.city} and move.`;
     message = `You've got about ${formatDuration(cityTime)} on the ground. Enough for one good thing, not three. Set an alarm for the turnaround and keep it tight.`;

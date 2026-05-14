@@ -13,6 +13,7 @@ import { SimpleMap } from "@/components/gateaway/SimpleMap";
 import { DebugMap } from "@/components/gateaway/DebugMap";
 import { TravelTimesBreakdown } from "@/components/gateaway/TravelTimesBreakdown";
 import { PersonaSelector } from "@/components/gateaway/PersonaSelector";
+import { FeedbackForm } from "@/components/gateaway/FeedbackForm";
 import { submitPlannerForm, PlanResponse, PlaceOption } from "@/api/client";
 import { PlanResult as GDPlanResult, AirportCode, PassportRegion, AIRPORTS } from "@/lib/gateaway-data";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -83,8 +84,12 @@ const Index = () => {
         });
 
         const fo = response.flight_overview;
+        const cityMins = fo.city_time_minutes;
+        const localVerdict: PlanResult["verdict"] =
+          cityMins < 30 ? "stay" : cityMins < 90 ? "tight" : "safe";
         const adaptedPlan: PlanResult = {
           ...response,
+          verdict: localVerdict,
           airport: response.airport || {
             code: layoverAirport as AirportCode,
             city: AIRPORTS[layoverAirport].city,
@@ -197,6 +202,21 @@ const Index = () => {
     }
   };
 
+  const handleReset = () => {
+    setInboundFlight("");
+    setOutboundFlight("");
+    setInboundDate("");
+    setOutboundDate("");
+    setSubmitted(false);
+    setPlan(null);
+    setSelectedPersona(null);
+    setPersonaPlaces([]);
+    setSelectedPlaces([]);
+    setRouteData(null);
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
       <Header />
@@ -273,6 +293,26 @@ const Index = () => {
           <FlightOverview overview={plan.flight_overview} />
           <Verdict plan={plan} flightOverview={plan.flight_overview} />
 
+          {plan.verdict === "stay" ? (
+            <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 flex flex-col gap-6">
+              <div className="space-y-3">
+                <p className="text-sm font-medium uppercase tracking-[0.22em] text-muted-foreground">This one's a terminal day</p>
+                <p className="text-base leading-relaxed text-foreground">
+                  By the time you cleared immigration and rode into {plan.airport.city}, you&apos;d be turning right back around. The maths just don&apos;t add up on this layover.
+                </p>
+                <p className="text-base leading-relaxed text-muted-foreground">
+                  {plan.airport.name} is genuinely worth exploring — find a good spot to eat, grab a coffee, and save {plan.airport.city} for a layover where you&apos;ll actually have time to enjoy it.
+                </p>
+              </div>
+              <button
+                onClick={handleReset}
+                className="self-start px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+              >
+                Start planning next trip
+              </button>
+            </div>
+          ) : (
+          <>
           <PersonaSelector selected={selectedPersona} onSelect={setSelectedPersona} />
 
           {/* Place Options - revealed after persona is chosen */}
@@ -297,6 +337,31 @@ const Index = () => {
                 setRouteData(null);
               }}
             />
+          )}
+
+          {/* My Plan - appears once user has added at least one place */}
+          {selectedPlaces.length > 0 && (
+            <MyPlan
+              places={selectedPlaces}
+              cityTimeMinutes={plan.cityTimeMinutes}
+              onRemove={(id) =>
+                setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== id))
+            }
+            onMoveUp={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                return next;
+              })
+            }
+            onMoveDown={(index) =>
+              setSelectedPlaces((prev) => {
+                const next = [...prev];
+                [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                return next;
+              })
+            }
+          />
           )}
 
           {/* Plan Trip Button - appears when places selected */}
@@ -337,34 +402,10 @@ const Index = () => {
                     <TravelTimesBreakdown routeData={routeData} places={selectedPlaces} />
                   </div>
                   <DebugMap routeData={routeData} airportCode={layoverAirport} />
+                  <FeedbackForm />
                 </>
               )}
             </div>
-          )}
-
-          {/* My Plan - appears once user has added at least one place */}
-          {selectedPlaces.length > 0 && (
-            <MyPlan
-              places={selectedPlaces}
-              cityTimeMinutes={plan.cityTimeMinutes}
-              onRemove={(id) =>
-                setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== id))
-            }
-            onMoveUp={(index) =>
-              setSelectedPlaces((prev) => {
-                const next = [...prev];
-                [next[index - 1], next[index]] = [next[index], next[index - 1]];
-                return next;
-              })
-            }
-            onMoveDown={(index) =>
-              setSelectedPlaces((prev) => {
-                const next = [...prev];
-                [next[index], next[index + 1]] = [next[index + 1], next[index]];
-                return next;
-              })
-            }
-          />
           )}
 
           {/* Activity Itinerary Flowchart — only when timeline data available */}
@@ -384,12 +425,19 @@ const Index = () => {
           {plan.suggestions && (
             <Suggestions plan={plan} />
           )}
+          </>
+          )}
         </section>
       )}
 
       <footer className="mt-20 border-t border-border pt-6 text-xs leading-relaxed text-muted-foreground">
-        Prototype · Times are hardcoded estimates. Always double-check your airline's
-        boarding cutoff before stepping outside the terminal.
+        <p className="font-medium text-foreground">AI-Generated Itinerary — Disclaimer</p>
+        <p className="mt-1">
+          This itinerary is generated by an AI system and is provided for informational purposes only.
+          GateAway accepts no liability for missed flights, incorrect transit times, or changes in local conditions.
+          Always verify transport times independently and allow extra buffer time.
+          You are solely responsible for returning to the airport on time.
+        </p>
       </footer>
     </main>
   );

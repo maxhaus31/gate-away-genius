@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Upload } from "lucide-react";
 import { AIRPORTS, AirportCode, PassportRegion, PASSPORT_LABELS } from "@/lib/gateaway-data";
 
 interface Props {
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export const PlannerForm = ({ airport, passport, arrivalFlight, departureFlight, inboundDate, outboundDate, onChange, onSubmit }: Props) => {
+  const [isDragging, setIsDragging] = useState(false);
 
   return (
     <form
@@ -28,6 +31,34 @@ export const PlannerForm = ({ airport, passport, arrivalFlight, departureFlight,
       }}
       className="rounded-2xl border border-border bg-card p-6 sm:p-8"
     >
+      <div
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => { e.preventDefault(); setIsDragging(false); }}
+        className={`mb-6 flex items-center gap-4 rounded-xl border-2 border-dashed px-5 py-4 transition-colors ${
+          isDragging
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/50"
+        }`}
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+          <Upload className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">Upload your ticket PDF</p>
+          <p className="text-xs text-muted-foreground">
+            Drop a boarding pass / e-ticket and we'll prefill the form.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="shrink-0 flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary/40"
+        >
+          <Upload className="h-3.5 w-3.5" />
+          Choose PDF
+        </button>
+      </div>
+
       <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
         <Field label="Arrival flight">
           <input

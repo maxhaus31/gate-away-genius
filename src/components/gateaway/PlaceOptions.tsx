@@ -35,7 +35,6 @@ export const PlaceOptions = ({ places, selectedIds, onPlaceSelect, onPlaceDesele
             <button
               key={place.place_id}
               onClick={() => !isAdded && onPlaceSelect(place)}
-              disabled={isAdded}
               className={`group relative overflow-hidden rounded-xl border bg-card text-left transition-all ${
                 isAdded
                   ? "border-green-500 opacity-100 bg-green-50 dark:bg-green-950/20 cursor-default"
