@@ -114,7 +114,7 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
             "itinerary": itinerary,
             "timing_summary": {
                 "total_travel_minutes": sum(leg["duration_minutes"] for leg in legs),
-                "total_activity_minutes": request.time_per_place * 3,  # 3 places
+                "total_activity_minutes": request.time_per_place * len(request.place_names),
                 "total_used_minutes": total_used_minutes,
                 "available_minutes": request.available_minutes,
                 "remaining_minutes": max(0, remaining_minutes),

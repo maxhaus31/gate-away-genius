@@ -54,6 +54,8 @@ const Index = () => {
   const [selectedPlaces, setSelectedPlaces] = useState<PlaceOption[]>([]);
   const [routeData, setRouteData] = useState<any>(null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
+  const [routePlacesSnapshot, setRoutePlacesSnapshot] = useState<PlaceOption[]>([]);
+  const [showRecalculateButton, setShowRecalculateButton] = useState(false);
 
   useEffect(() => {
     if (!submitted) return;
@@ -65,6 +67,8 @@ const Index = () => {
       setSelectedPersona(null);
       setSelectedPlaces([]);
       setRouteData(null);
+      setRoutePlacesSnapshot([]);
+      setShowRecalculateButton(false);
 
       if (!inboundFlight || !outboundFlight) {
         setError("Please enter both inbound and outbound flight numbers.");
@@ -138,6 +142,8 @@ const Index = () => {
       setPersonaPlaces([]);
       setSelectedPlaces([]);
       setRouteData(null);
+      setRoutePlacesSnapshot([]);
+      setShowRecalculateButton(false);
       try {
         const response = await fetch(`${API_BASE_URL}/api/places-for-persona`, {
           method: "POST",
@@ -168,6 +174,21 @@ const Index = () => {
     fetchPersonaPlaces();
   }, [selectedPersona]);
 
+  // Detect when selected places change after route is calculated
+  useEffect(() => {
+    if (!routeData) {
+      setShowRecalculateButton(false);
+      return;
+    }
+
+    // Check if selected places differ from the snapshot that was used for the route
+    const hasChanged =
+      selectedPlaces.length !== routePlacesSnapshot.length ||
+      selectedPlaces.some((place, idx) => place.place_id !== routePlacesSnapshot[idx]?.place_id);
+
+    setShowRecalculateButton(hasChanged);
+  }, [selectedPlaces, routeData, routePlacesSnapshot]);
+
   // Calculate route when user clicks "Plan Trip" button
   const handlePlanTrip = async () => {
     setCalculatingRoute(true);
@@ -193,6 +214,8 @@ const Index = () => {
 
       const data = await response.json();
       setRouteData(data);
+      setRoutePlacesSnapshot([...selectedPlaces]);
+      setShowRecalculateButton(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Route calculation failed";
       console.error("Route error:", message);
@@ -213,6 +236,8 @@ const Index = () => {
     setPersonaPlaces([]);
     setSelectedPlaces([]);
     setRouteData(null);
+    setRoutePlacesSnapshot([]);
+    setShowRecalculateButton(false);
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -334,7 +359,6 @@ const Index = () => {
               }}
               onPlaceDeselect={(placeId) => {
                 setSelectedPlaces((prev) => prev.filter((p) => p.place_id !== placeId));
-                setRouteData(null);
               }}
             />
           )}
@@ -383,6 +407,22 @@ const Index = () => {
                 ) : (
                   "Plan Trip"
                 )}
+              </button>
+            </div>
+          )}
+
+          {/* Recalculate Route Button - appears when places change after route is calculated */}
+          {showRecalculateButton && routeData && !calculatingRoute && (
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                You've updated your place selections
+              </p>
+              <button
+                onClick={handlePlanTrip}
+                disabled={calculatingRoute}
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              >
+                Recalculate Route
               </button>
             </div>
           )}
