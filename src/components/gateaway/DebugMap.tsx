@@ -42,9 +42,17 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
   const [mapsReady, setMapsReady] = useState<boolean>(typeof window !== "undefined" && !!window.google?.maps);
   const [mapsError, setMapsError] = useState<string | null>(null);
 
+  const hasMapConstructor = () => {
+    if (typeof window === "undefined") return false;
+    return typeof window.google?.maps?.Map === "function";
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (window.google?.maps) {
+
+    const globalWindow = window as Window & { __gateawayMapsInit?: () => void };
+
+    if (hasMapConstructor()) {
       setMapsReady(true);
       return;
     }
@@ -55,23 +63,52 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
       return;
     }
 
+    globalWindow.__gateawayMapsInit = () => {
+      if (hasMapConstructor()) {
+        setMapsReady(true);
+      } else {
+        setMapsError("Google Maps loaded, but Map constructor is unavailable.");
+      }
+    };
+
     const existingScript = document.querySelector<HTMLScriptElement>("script[data-google-maps-loader='true']");
     if (existingScript) {
-      existingScript.addEventListener("load", () => setMapsReady(true));
+      if (hasMapConstructor()) {
+        setMapsReady(true);
+        return;
+      }
+
+      existingScript.addEventListener("load", () => {
+        if (hasMapConstructor()) {
+          setMapsReady(true);
+        } else {
+          setMapsError("Google Maps loaded, but Map constructor is unavailable.");
+        }
+      });
       existingScript.addEventListener("error", () => setMapsError("Failed to load Google Maps."));
       return;
     }
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=maps,geometry&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry&v=weekly&callback=__gateawayMapsInit`;
     script.async = true;
     script.defer = true;
     script.dataset.googleMapsLoader = "true";
 
-    script.onload = () => setMapsReady(true);
+    script.onload = () => {
+      if (hasMapConstructor()) {
+        setMapsReady(true);
+      }
+    };
     script.onerror = () => setMapsError("Failed to load Google Maps.");
 
     document.head.appendChild(script);
+
+    return () => {
+      if (globalWindow.__gateawayMapsInit) {
+        delete globalWindow.__gateawayMapsInit;
+      }
+    };
   }, []);
 
   const clearRoutePolylines = () => {
@@ -81,6 +118,11 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
 
   useEffect(() => {
     if (!mapsReady || !mapRef.current || !window.google) return;
+
+    if (!hasMapConstructor()) {
+      setMapsError("Google Maps is not fully initialized yet.");
+      return;
+    }
 
     const waypoints = routeData?.route?.waypoints || [];
     if (waypoints.length === 0) return;
