@@ -42,6 +42,8 @@ class CalculateRouteRequest(BaseModel):
     transport_mode: str = "transit"  # "transit" or "driving"
     available_minutes: int  # Total available time for activities
     time_per_place: int = 45  # Minutes to spend at each place
+    total_layover_minutes: int = 0  # Total layover duration
+    airport_buffer_minutes: int = 0  # Airport buffers (security, check-in, etc)
 
 
 @app.get("/health")
@@ -107,7 +109,8 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
         
         # Calculate remaining time
         total_used_minutes = cumulative_minutes
-        remaining_minutes = request.available_minutes - total_used_minutes
+        # remaining_minutes = total_layover - airport_buffers - total_used_minutes
+        remaining_minutes = request.total_layover_minutes - request.airport_buffer_minutes - total_used_minutes
         
         return {
             "route": route_data,
@@ -117,7 +120,7 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
                 "total_activity_minutes": request.time_per_place * len(request.place_names),
                 "total_used_minutes": total_used_minutes,
                 "available_minutes": request.available_minutes,
-                "remaining_minutes": max(0, remaining_minutes),
+                "remaining_minutes": request.total_layover_minutes - request.airport_buffer_minutes - total_used_minutes,
             }
         }
     
