@@ -295,7 +295,15 @@ async def extract_flights(file: UploadFile = File(...)):
                     timeout=30,
                 )
                 resp.raise_for_status()
-            raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+            resp_data = resp.json()
+            usage = resp_data.get("usageMetadata", {})
+            print(
+                f"[TOKENS] extract_boarding_pass (gemini-2.5-flash) — "
+                f"prompt: {usage.get('promptTokenCount', '?')}, "
+                f"output: {usage.get('candidatesTokenCount', '?')}, "
+                f"total: {usage.get('totalTokenCount', '?')}"
+            )
+            raw = resp_data["candidates"][0]["content"]["parts"][0]["text"].strip()
             if "```json" in raw:
                 raw = raw.split("```json")[1].split("```")[0].strip()
             elif "```" in raw:

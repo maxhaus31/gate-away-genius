@@ -14,6 +14,13 @@ GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model
 PRIMARY_MODEL = "gemini-2.5-flash"
 FALLBACK_MODEL = "gemini-2.0-flash-lite"
 
+
+def _log_tokens(call_name: str, model: str, usage: dict) -> None:
+    prompt = usage.get("promptTokenCount", "?")
+    output = usage.get("candidatesTokenCount", "?")
+    total = usage.get("totalTokenCount", "?")
+    print(f"[TOKENS] {call_name} ({model}) — prompt: {prompt}, output: {output}, total: {total}")
+
 # Simple in-memory prompt cache — avoids re-hitting the API for identical prompts
 # Entries expire after 10 minutes (600s), which covers rapid repeated test submissions
 _CACHE: dict = {}
@@ -562,7 +569,7 @@ class Activity(BaseModel):
     longitude: float = Field(..., description="GPS longitude (-180 to 180)")
 
 
-def _call_gemini(prompt: str, model: str = PRIMARY_MODEL) -> str:
+def _call_gemini(prompt: str, model: str = PRIMARY_MODEL, call_name: str = "gemini") -> str:
     """Make a single REST call to Gemini and return the text response."""
     url = GEMINI_API_URL.format(model=model)
     payload = {
@@ -572,19 +579,20 @@ def _call_gemini(prompt: str, model: str = PRIMARY_MODEL) -> str:
     response = httpx.post(url, params={"key": GOOGLE_GEMINI_API_KEY}, json=payload, timeout=30)
     response.raise_for_status()
     data = response.json()
+    _log_tokens(call_name, model, data.get("usageMetadata", {}))
     return data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
 
-def _call_gemini_with_fallback(prompt: str) -> str:
+def _call_gemini_with_fallback(prompt: str, call_name: str = "gemini") -> str:
     """Try primary model, fall back to lite on failure. Caches results to avoid repeat hits."""
     cached = _cache_get(prompt)
     if cached is not None:
         return cached
     try:
-        result = _call_gemini(prompt, PRIMARY_MODEL)
+        result = _call_gemini(prompt, PRIMARY_MODEL, call_name=call_name)
     except Exception as e:
         print(f"WARNING: Primary model failed ({e}), trying fallback")
-        result = _call_gemini(prompt, FALLBACK_MODEL)
+        result = _call_gemini(prompt, FALLBACK_MODEL, call_name=call_name)
     _cache_set(prompt, result)
     return result
 
@@ -626,7 +634,7 @@ Return exactly 3 activities as a JSON array. Each activity must have these exact
 Format: Return ONLY valid JSON array, nothing else."""
 
         try:
-            text = _call_gemini_with_fallback(prompt_text)
+            text = _call_gemini_with_fallback(prompt_text, call_name="generate_activities")
 
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
@@ -666,7 +674,7 @@ Format: Return ONLY valid JSON array, nothing else."""
             prompt_text = f"Write ONE witty sentence telling someone they should probably just stay in the airport and relax with a coffee. {airport_city} will still be there another time. Max 15 words. No markdown."
 
         try:
-            return _call_gemini_with_fallback(prompt_text)[:100]
+            return _call_gemini_with_fallback(prompt_text, call_name="generate_verdict_copy")[:100]
         except Exception as e:
             print(f"WARNING: Gemini verdict generation failed: {e}")
             return self._fallback_copy(verdict, available_minutes, airport_city)
@@ -702,7 +710,7 @@ Format: Return ONLY valid JSON array, nothing else."""
         )
 
         try:
-            text = _call_gemini_with_fallback(prompt_text)
+            text = _call_gemini_with_fallback(prompt_text, call_name="generate_place_descriptions_batch")
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
             elif "```" in text:
@@ -788,7 +796,7 @@ Return a JSON array. Each element must have exactly these fields:
 Return ONLY a valid JSON array, nothing else."""
 
         try:
-            text = _call_gemini_with_fallback(prompt_text)
+            text = _call_gemini_with_fallback(prompt_text, call_name="generate_persona_places")
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
             elif "```" in text:
