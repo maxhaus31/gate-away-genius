@@ -722,9 +722,11 @@ Format: Return ONLY valid JSON array, nothing else."""
         persona_label: str,
         persona_description: str,
         available_minutes: int,
+        candidate_places: List[dict] | None = None,
     ) -> List[dict]:
         """
         Ask Gemini for 5 places in airport_city tailored to the traveller persona.
+        If candidate_places is provided, Gemini picks 5 from that live list.
         Returns list of dicts with: name, description, address, types, coordinates, search_query
         """
         persona_guidelines = {
@@ -755,7 +757,36 @@ Format: Return ONLY valid JSON array, nothing else."""
             "Focus on places that are genuinely special, well-known, and memorable."
         )
 
-        prompt_text = f"""You are an expert local travel guide recommending layover stops in {airport_city}.
+        if candidate_places:
+            candidate_lines = []
+            for index, place in enumerate(candidate_places, start=1):
+                candidate_lines.append(
+                    f'{index}. {place.get("name", "Unknown")} | {place.get("description", "")} | '
+                    f'{place.get("address", "")} | {place.get("types", [])} | {place.get("coordinates", "")}'
+                )
+
+            prompt_text = f"""You are an expert local travel guide choosing the best layover stops in {airport_city}.
+
+Traveller persona: "{persona_label}" — {persona_description}
+Available city time: {available_minutes} minutes
+
+Your goal: Choose exactly 5 places from the candidate list below that best match this traveller.
+
+Persona focus: {persona_hint}
+
+
+Candidate list:
+{chr(10).join(candidate_lines)}
+
+Rules:
+- Choose only from the candidate list.
+- Return exactly 5 unique places.
+- Prefer the most iconic, special, and persona-relevant candidates.
+- Return the selected place names as a JSON array of strings.
+
+Return ONLY a valid JSON array, nothing else."""
+        else:
+            prompt_text = f"""You are an expert local travel guide recommending layover stops in {airport_city}.
 
 Traveller persona: "{persona_label}" — {persona_description}
 Available city time: {available_minutes} minutes
@@ -794,6 +825,23 @@ Return ONLY a valid JSON array, nothing else."""
             elif "```" in text:
                 text = text.split("```")[1].split("```")[0].strip()
             places = json.loads(text)
+
+            if candidate_places:
+                candidate_by_name = {
+                    place.get("name", "").strip().lower(): place
+                    for place in candidate_places
+                }
+
+                selected_places = []
+                for selected_name in places[:5]:
+                    if not isinstance(selected_name, str):
+                        continue
+                    candidate = candidate_by_name.get(selected_name.strip().lower())
+                    if candidate and candidate not in selected_places:
+                        selected_places.append(candidate)
+
+                return selected_places[:5]
+
             return places[:5]
         except Exception as e:
             print(f"WARNING: Gemini persona places generation failed: {e}, using fallback places")

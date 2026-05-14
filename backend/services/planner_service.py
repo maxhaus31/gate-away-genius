@@ -432,6 +432,12 @@ async def get_persona_place_options(
     airport_cfg = AIRPORTS_CONFIG.get(airport_code, {})
     airport_city = airport_cfg.get("city", airport_code)
 
+    candidate_places = await PlacesService.find_attractions(
+        airport_code=airport_code,
+        available_minutes=available_minutes,
+        max_places=20,
+    )
+
     gemini = GeminiActivityService()
     raw_places = gemini.generate_persona_places(
         airport_city=airport_city,
@@ -439,7 +445,11 @@ async def get_persona_place_options(
         persona_label=persona_label,
         persona_description=persona_description,
         available_minutes=available_minutes,
+        candidate_places=candidate_places,
     )
+
+    if not raw_places:
+        raw_places = candidate_places[:5]
 
     result = []
     for place in raw_places:

@@ -131,7 +131,7 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             </div>
           </div>
           <div className="bg-card p-5">
-            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-foreground">
               Activity Time
             </div>
             <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-primary sm:text-4xl">
@@ -139,7 +139,7 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             </div>
           </div>
           <div className="bg-card p-5">
-            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-foreground">
               Total Used
             </div>
             <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
@@ -147,7 +147,7 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
             </div>
           </div>
           <div className="bg-card p-5">
-            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-foreground">
               Time Remaining
             </div>
             <div className="mt-3 text-3xl font-medium tracking-tight tabular-nums text-muted-foreground sm:text-4xl">
@@ -186,28 +186,28 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
                     }}
                     className={`flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors ${
                       isTravel
-                        ? "border-blue-200 bg-blue-50 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:hover:bg-blue-900/60"
-                        : "cursor-default border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                      ? "border-blue-950 bg-[#141831]"
+                      : "cursor-default border-zinc-700 bg-zinc-800/60 dark:border-zinc-700 dark:bg-zinc-800/60"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {isTravel ? "🚌" : "📍"} {title}
+                      <div className="text-sm font-semibold text-white">
+                        {isTravel ? "🚇" : "⭐"} {title}
                       </div>
 
                       {isTravel ? (
                         <>
                           {item.distance_meters && (
-                            <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                            <div className="mt-1 text-xs text-zinc-300">
                               Distance: {formatDistance(item.distance_meters)}
                             </div>
                           )}
                           {item.transit_details ? (
-                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                            <div className="mt-1 text-xs text-zinc-300">
                               Tap to view transit details
                             </div>
                           ) : (
-                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                            <div className="mt-1 text-xs text-zinc-300">
                               Detailed transit steps are not available yet.
                             </div>
                           )}
@@ -215,12 +215,12 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
                       ) : (
                         <>
                           {placeDetails?.description && (
-                            <p className="mt-1 text-sm text-gray-700 dark:text-gray-200">
+                            <p className="mt-1 text-sm text-zinc-300">
                               {placeDetails.description}
                             </p>
                           )}
                           {placeDetails?.address && (
-                            <p className="mt-2 text-xs text-gray-700 dark:text-gray-200">
+                            <p className="mt-2 text-xs text-zinc-400">
                               📍 {placeDetails.address}
                             </p>
                           )}
@@ -229,10 +229,10 @@ export const TravelTimesBreakdown = ({ routeData, places = [] }: Props) => {
                     </div>
 
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-xs text-gray-600 dark:text-gray-300">
+                      <div className="mfont-semibold text-white">
                         {formatDuration(item.duration_minutes)}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">
+                      <div className="text-xs text-zinc-300">
                         {isTravel ? "travel" : "visit"}
                       </div>
                     </div>

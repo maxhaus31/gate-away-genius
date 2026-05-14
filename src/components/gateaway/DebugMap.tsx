@@ -195,9 +195,9 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
 
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
         <div>
-          <p className="text-sm font-medium text-foreground">Route overlay</p>
+          <p className="text-sm font-medium text-foreground">Explore Route</p>
           <p className="text-xs text-muted-foreground">
-            Draw the actual trip line on the map.
+            Draw the trip on the map.
           </p>
         </div>
         <button
