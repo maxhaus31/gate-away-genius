@@ -39,6 +39,40 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
   const routePolylines = useRef<google.maps.Polyline[]>([]);
   const routeDrawToken = useRef(0);
   const [showRoute, setShowRoute] = useState(false);
+  const [mapsReady, setMapsReady] = useState<boolean>(typeof window !== "undefined" && !!window.google?.maps);
+  const [mapsError, setMapsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.google?.maps) {
+      setMapsReady(true);
+      return;
+    }
+
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+    if (!apiKey) {
+      setMapsError("Google Maps API key is missing.");
+      return;
+    }
+
+    const existingScript = document.querySelector<HTMLScriptElement>("script[data-google-maps-loader='true']");
+    if (existingScript) {
+      existingScript.addEventListener("load", () => setMapsReady(true));
+      existingScript.addEventListener("error", () => setMapsError("Failed to load Google Maps."));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=maps,geometry&loading=async`;
+    script.async = true;
+    script.defer = true;
+    script.dataset.googleMapsLoader = "true";
+
+    script.onload = () => setMapsReady(true);
+    script.onerror = () => setMapsError("Failed to load Google Maps.");
+
+    document.head.appendChild(script);
+  }, []);
 
   const clearRoutePolylines = () => {
     routePolylines.current.forEach((polyline) => polyline.setMap(null));
@@ -46,7 +80,7 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
   };
 
   useEffect(() => {
-    if (!mapRef.current || !window.google) return;
+    if (!mapsReady || !mapRef.current || !window.google) return;
 
     const waypoints = routeData?.route?.waypoints || [];
     if (waypoints.length === 0) return;
@@ -103,10 +137,10 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
       }
     });
 
-  }, [routeData]);
+  }, [routeData, mapsReady]);
 
   useEffect(() => {
-    if (!mapInstance.current || !window.google) return;
+    if (!mapsReady || !mapInstance.current || !window.google) return;
 
     const waypoints = routeData?.route?.waypoints || [];
     clearRoutePolylines();
@@ -183,15 +217,21 @@ export const DebugMap = ({ routeData, airportCode }: Props) => {
       routeDrawToken.current += 1;
       clearRoutePolylines();
     };
-  }, [routeData, showRoute]);
+  }, [routeData, showRoute, mapsReady]);
 
   return (
     <div className="w-full space-y-4">
       {/* Map Container */}
-      <div
-        ref={mapRef}
-        className="h-96 w-full rounded-lg border border-gray-300 shadow-md"
-      />
+      {mapsError ? (
+        <div className="h-96 w-full rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {mapsError}
+        </div>
+      ) : (
+        <div
+          ref={mapRef}
+          className="h-96 w-full rounded-lg border border-gray-300 shadow-md"
+        />
+      )}
 
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
         <div>

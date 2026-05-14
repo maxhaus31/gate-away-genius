@@ -125,15 +125,10 @@ Backend (FastAPI)
 - `GET /api/airports/{airport_code}`
 
 ## Screenshots
-
-Suggested file locations:
-- `docs/screenshots/home.png`
-- `docs/screenshots/plan-results.png`
-
-```markdown
 ![Home - Input Form](docs/screenshots/home.png)
-![Plan Results - Timeline and Route](docs/screenshots/plan-results.png)
-```
+![Select your Places](docs/screenshots/places.png)
+![Plan Results - Timeline and Route](docs/screenshots/trip.png)
+
 
 ## Local Development
 
