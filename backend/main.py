@@ -76,33 +76,47 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
         if not route_data:
             raise HTTPException(status_code=500, detail="Failed to calculate route")
         
-        # Build detailed itinerary with timing
+        # Build a resilient itinerary from the planned stops.
+        # If the Google route service only returns a partial set of legs, we still
+        # show every place stop and the return leg so the breakdown stays complete.
         itinerary = []
         cumulative_minutes = 0
-        
-        legs = route_data["legs"]
-        
-        for i, leg in enumerate(legs):
-            # Travel leg
-            travel_duration = leg["duration_minutes"]
+
+        legs = route_data.get("legs") or []
+        waypoints = route_data.get("waypoints") or []
+
+        stop_names = ["Airport"] + list(request.place_names) + ["Airport (Return)"]
+        if len(waypoints) == len(stop_names):
+            stop_names = [
+                (wp.get("name") if isinstance(wp, dict) and wp.get("name") else stop_names[idx])
+                for idx, wp in enumerate(waypoints)
+            ]
+
+        for index in range(max(0, len(stop_names) - 1)):
+            from_place = stop_names[index]
+            to_place = stop_names[index + 1]
+            leg = legs[index] if index < len(legs) else {}
+
+            travel_duration = int(leg.get("duration_minutes", 0) or 0)
             itinerary.append({
                 "sequence": len(itinerary),
                 "type": "travel",
-                "from": leg["from_place"],
-                "to": leg["to_place"],
+                "from": from_place,
+                "to": to_place,
                 "duration_minutes": travel_duration,
                 "cumulative_minutes": cumulative_minutes + travel_duration,
-                "distance_meters": leg["distance_meters"],
+                "distance_meters": leg.get("distance_meters"),
                 "transit_details": leg.get("transit_details"),
             })
             cumulative_minutes += travel_duration
-            
-            # Activity leg (45 min at the place, if not at airport)
-            if "Airport" not in leg["to_place"] and i < len(legs) - 1:  # Not the return leg
+
+            # Add an activity stop for every real place visit, not for the return airport.
+            if index < len(request.place_names):
+                place_name = request.place_names[index]
                 itinerary.append({
                     "sequence": len(itinerary),
                     "type": "activity",
-                    "place": leg["to_place"],
+                    "place": place_name,
                     "duration_minutes": request.time_per_place,
                     "cumulative_minutes": cumulative_minutes + request.time_per_place,
                 })
@@ -110,18 +124,17 @@ async def calculate_route(request: CalculateRouteRequest) -> dict:
         
         # Calculate remaining time
         total_used_minutes = cumulative_minutes
-        # remaining_minutes = total_layover - airport_buffers - total_used_minutes
         remaining_minutes = request.total_layover_minutes - request.airport_buffer_minutes - total_used_minutes
         
         return {
             "route": route_data,
             "itinerary": itinerary,
             "timing_summary": {
-                "total_travel_minutes": sum(leg["duration_minutes"] for leg in legs),
-                "total_activity_minutes": request.time_per_place * len(request.place_names),
+                "total_travel_minutes": sum(item["duration_minutes"] for item in itinerary if item["type"] == "travel"),
+                "total_activity_minutes": sum(item["duration_minutes"] for item in itinerary if item["type"] == "activity"),
                 "total_used_minutes": total_used_minutes,
                 "available_minutes": request.available_minutes,
-                "remaining_minutes": request.total_layover_minutes - request.airport_buffer_minutes - total_used_minutes,
+                "remaining_minutes": remaining_minutes,
             }
         }
     
