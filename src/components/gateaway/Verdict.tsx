@@ -42,7 +42,7 @@ export const Verdict = ({ plan, flightOverview }: { plan: PlanResult; flightOver
           note={fo ? `incl. ${formatDuration(fo.security_reentry_minutes)} security re-entry` : undefined}
           muted
         />
-        <Stat label="Transport (×2)" value={fo ? `−${formatDuration(fo.transport_minutes)}` : "—"} muted />
+        <Stat label="Estimated Travel Time" value={fo ? `−${formatDuration(fo.transport_minutes*2)}` : "—"} muted />
         <Stat label="Yours in the city" value={formatDuration(plan.cityTimeMinutes)} accent />
       </div>
     </div>
